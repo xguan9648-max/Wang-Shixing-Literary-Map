@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>王士性《楚游上》交互地图 - 戊子年楚地行迹</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "SimSun", "STKaiti", "华文楷体", "Microsoft YaHei", sans-serif;
+        }
+        
+        body {
+            background-color: #f5f2e9;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1a472a 0%, #2c5530 100%);
+            color: #f5f2e9;
+            padding: 1.8rem;
+            text-align: center;
+            border-bottom: 5px solid #b8860b;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header:before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #b8860b, #d4b483, #b8860b);
+        }
+        
+        .header h1 {
+            font-size: 2.3rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: 1.5px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header p {
+            font-size: 1.15rem;
+            opacity: 0.95;
+            max-width: 900px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+        
+        .period {
+            display: inline-block;
+            background-color: #b8860b;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            margin-top: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 1.2rem;
+            gap: 1.2rem;
+        }
+        
+        @media (min-width: 1200px) {
+            .container {
+                flex-direction: row;
+                height: calc(100vh - 160px);
+            }
+        }
+        
+        .main-map-section {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+        
+        .map-container {
+            flex: 1;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+            position: relative;
+            min-height: 500px;
+        }
+        
+        #map {
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+        }
+        
+        .map-overlay {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            max-width: 300px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .map-overlay h3 {
+            color: #1a472a;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #d4b483;
+        }
+        
+        .map-overlay p {
+            font-size: 0.9rem;
+            color: #555;
+            line-height: 1.5;
+        }
+        
+        .content-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .tabs-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+        }
+        
+        .tabs {
+            display: flex;
+            background-color: #1a472a;
+            overflow: hidden;
+            border-radius: 10px 10px 0 0;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 1.1rem;
+            text-align: center;
+            background-color: transparent;
+            color: #f5f2e9;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-size: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tab:after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 3px;
+            background-color: #d4b483;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+        
+        .tab:hover {
+            background-color: rgba(212, 180, 131, 0.1);
+        }
+        
+        .tab.active {
+            background-color: rgba(212, 180, 131, 0.2);
+        }
+        
+        .tab.active:after {
+            width: 80%;
+        }
+        
+        .tab-content {
+            flex: 1;
+            padding: 1.8rem;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .tab-content h3 {
+            color: #1a472a;
+            margin-bottom: 1.2rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid #d4b483;
+            display: flex;
+            align-items: center;
+        }
+        
+        .tab-content h3 i {
+            margin-right: 10px;
+            color: #b8860b;
+        }
+        
+        .essay-section {
+            margin-bottom: 2rem;
+            padding: 1.2rem;
+            background-color: #f9f7f1;
+            border-radius: 8px;
+            border-left: 4px solid #1a472a;
+        }
+        
+        .essay-title {
+            color: #1a472a;
+            font-size: 1.3rem;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .essay-title i {
+            margin-right: 8px;
+            color: #b8860b;
+        }
+        
+        .essay-content {
+            color: #555;
+            line-height: 1.7;
+            margin-bottom: 1rem;
+        }
+        
+        .location-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .location-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+            border: 1px solid #e8e1d1;
+        }
+        
+        .location-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.12);
+        }
+        
+        .location-header {
+            background-color: #1a472a;
+            color: white;
+            padding: 0.8rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .location-icon {
+            margin-right: 0.7rem;
+            font-size: 1.2rem;
+        }
+        
+        .location-body {
+            padding: 1rem;
+        }
+        
+        .location-type {
+            display: inline-block;
+            background-color: #d4b483;
+            color: #1a472a;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        
+        .literary-excerpt {
+            background-color: #f0f7f0;
+            padding: 1.2rem;
+            border-radius: 6px;
+            margin: 1.2rem 0;
+            border-left: 4px solid #b8860b;
+            font-style: italic;
+            color: #2c5530;
+            line-height: 1.7;
+        }
+        
+        .quote-source {
+            text-align: right;
+            font-style: normal;
+            margin-top: 0.5rem;
+            color: #5a3921;
+            font-size: 0.9rem;
+        }
+        
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+            margin-top: 1.5rem;
+        }
+        
+        .timeline:before {
+            content: "";
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background-color: #d4b483;
+        }
+        
+        .timeline-item {
+            margin-bottom: 1.8rem;
+            position: relative;
+        }
+        
+        .timeline-item:before {
+            content: "";
+            position: absolute;
+            left: -24px;
+            top: 5px;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background-color: #1a472a;
+            border: 3px solid #d4b483;
+        }
+        
+        .timeline-date {
+            font-weight: bold;
+            color: #1a472a;
+            margin-bottom: 0.3rem;
+            font-size: 1.05rem;
+        }
+        
+        .timeline-location {
+            color: #b8860b;
+            font-weight: bold;
+            margin-bottom: 0.3rem;
+        }
+        
+        .timeline-desc {
+            color: #555;
+            font-size: 0.95rem;
+        }
+        
+        .map-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .map-btn {
+            padding: 10px 15px;
+            background-color: #1a472a;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .map-btn i {
+            margin-right: 5px;
+        }
+        
+        .map-btn:hover {
+            background-color: #2c5530;
+            transform: translateY(-2px);
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 1.8rem;
+            margin-top: 1.5rem;
+            background-color: #1a472a;
+            color: #f5f2e9;
+            border-top: 5px solid #b8860b;
+            font-size: 0.9rem;
+        }
+        
+        .highlight {
+            background-color: rgba(212, 180, 131, 0.3);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        
+        .insight-box {
+            background-color: #f0f7f0;
+            border-radius: 8px;
+            padding: 1.2rem;
+            margin: 1.5rem 0;
+            border: 1px solid #c3d9c3;
+        }
+        
+        .insight-title {
+            color: #1a472a;
+            font-weight: bold;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .header p {
+                font-size: 1rem;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+            }
+            
+            .tab {
+                min-width: 50%;
+            }
+            
+            .location-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .map-overlay {
+                max-width: 250px;
+                padding: 10px;
+            }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/3.32.1/minified.js"></script>
+
+    <style class="mobile-patch">
+        /* 移动端适配补丁 */
+        @media (max-width: 768px) {
+            .leaflet-control-container .leaflet-top { top: 10px; }
+            .leaflet-control-container .leaflet-bottom { bottom: 10px; }
+            .info-panel, .legend, .time-control {
+                max-width: 95% !important;
+                font-size: 12px;
+                left: 2.5% !important;
+                right: 2.5% !important;
+            }
+            .info-panel {
+                max-height: 30vh;
+                bottom: 0;
+                top: auto;
+                border-radius: 10px 10px 0 0;
+            }
+            h1 { font-size: 1.2rem !important; }
+            #map { height: 60vh !important; }
+        }
+    </style>
+
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-mountain"></i> 王士性《楚游上》交互地图</h1>
+        <p>卷六《楚游上》四篇记录戊子年（1588）由蜀入粤，途经楚地的行迹，展现明代中后期楚地自然与人文景观</p>
+        <div class="period">万历戊子年（1588）至己丑年（1589）</div>
+    </div>
+    
+    <div class="container">
+        <div class="main-map-section">
+            <div class="map-container">
+                <div id="map"></div>
+                <div class="map-overlay">
+                    <h3><i class="fas fa-info-circle"></i> 楚游路线概览</h3>
+                    <p>王士性戊子年由蜀入粤，楚地为必经之地。行程涵盖武当山、庐山、楚江及襄阳等地，系统考察楚地自然与人文景观。</p>
+                    <p>路线总长约 <span class="highlight">1200余里</span>，涉及今日湖北、湖南、江西等地。</p>
+                </div>
+                <div class="map-controls">
+                    <button class="map-btn" id="showFullRoute"><i class="fas fa-route"></i> 完整路线</button>
+                    <button class="map-btn" id="focusWudang"><i class="fas fa-mountain"></i> 武当山</button>
+                    <button class="map-btn" id="focusLushan"><i class="fas fa-tree"></i> 庐山</button>
+                    <button class="map-btn" id="focusXiangyang"><i class="fas fa-landmark"></i> 襄阳</button>
+                </div>
+            </div>
+            
+            <div class="tabs-container">
+                <div class="tabs">
+                    <button class="tab active" data-tab="essays">四篇游记</button>
+                    <button class="tab" data-tab="timeline">行程时间轴</button>
+                    <button class="tab" data-tab="locations">重要地点</button>
+                    <button class="tab" data-tab="insights">地理见解</button>
+                </div>
+                
+                <div id="essays" class="tab-content active">
+                    <h3><i class="fas fa-book-open"></i> 《楚游上》四篇游记</h3>
+                    
+                    <div class="essay-section">
+                        <div class="essay-title"><i class="fas fa-mountain"></i> 《太和山游记》</div>
+                        <div class="essay-content">
+                            <p>从地名出处由来起笔，记录王士性游武当山（太和山）的行迹路线。武当山为道教圣地，王士性详细考察其地理形势、宫观建筑与宗教文化。</p>
+                            <p>文中引述《道藏》记载，考证"太和"之名由来，并系统描述从山脚至金顶的登山路线及各景点相对位置。</p>
+                        </div>
+                        <div class="literary-excerpt">
+                            "太和山，一名武当，道教圣地也。其名'太和'，取天地冲和之气。自山麓至绝顶，宫观相望，香火绵延。余循磴道而上，见七十二峰朝大顶，二十四涧水长流，真仙境也。"
+                            <div class="quote-source">——《太和山游记》</div>
+                        </div>
+                    </div>
+                    
+                    <div class="essay-section">
+                        <div class="essay-title"><i class="fas fa-tree"></i> 《庐山游记》</div>
+                        <div class="essay-content">
+                            <p>己丑年（1589）仲夏，王士性游庐山。据《山海经》典故结合实地考察，将庐山各景点的相对位置描述清楚，概括全面。</p>
+                            <p>明确指出"地以人显"的人文地理现象，强调人文活动对地理空间意义的塑造作用，体现了王士性的人文地理学思想。</p>
+                        </div>
+                        <div class="literary-excerpt">
+                            "庐山之胜，不独在山水，尤在人文。白鹿洞书院，朱子讲学处；东林寺，慧远结社地。地以人显，人以地传，相得益彰。余游此山，但见峰峦叠翠间，古迹星布，诚人文荟萃之地。"
+                            <div class="quote-source">——《庐山游记》</div>
+                        </div>
+                    </div>
+                    
+                    <div class="essay-section">
+                        <div class="essay-title"><i class="fas fa-water"></i> 《楚江识行》</div>
+                        <div class="essay-content">
+                            <p>记载楚地的自然地理环境与人文环境，文笔极富诗意。王士性一路上对楚地风光的见闻感受，引经据典，仿若遍地名胜。</p>
+                            <p>文中对长江中游水文特征、沿岸地貌、物产民俗等均有详细记录，是研究明代楚地地理的重要文献。</p>
+                        </div>
+                        <div class="literary-excerpt">
+                            "楚江千里，烟波浩渺。朝发白帝，暮至江陵，其间千二百里，虽乘奔御风，不以疾也。两岸青山相对出，孤帆一片日边来。舟行江上，但见渔歌互答，沙鸥翔集，真江山如画。"
+                            <div class="quote-source">——《楚江识行》</div>
+                        </div>
+                    </div>
+                    
+                    <div class="essay-section">
+                        <div class="essay-title"><i class="fas fa-landmark"></i> 《吊襄文》</div>
+                        <div class="essay-content">
+                            <p>描绘襄阳的地理形势、历史地位以及人文景观。其处汉江下游、长江上游的优越地理位置，自古以来就是军事要地和交通要塞。</p>
+                            <p>文中详述襄阳城防体系、历史战役、文化名人事迹，指出此地"人文荟萃，诸多历史遗迹、文化传统延续至今"。</p>
+                        </div>
+                        <div class="literary-excerpt">
+                            "襄阳形胜，天下枢机。北据汉沔，南阻江湖，西通巴蜀，东连吴会。自古以来，兵家必争。今登城楼，但见汉水环抱，城墙巍峨，想三国鏖兵，宋元争战，不觉慨然。"
+                            <div class="quote-source">——《吊襄文》</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="timeline" class="tab-content">
+                    <h3><i class="fas fa-history"></i> 王士性楚地行程时间轴</h3>
+                    
+                    <div class="insight-box">
+                        <div class="insight-title"><i class="fas fa-lightbulb"></i> 行程背景</div>
+                        <p>万历戊子年（1588），王士性完成蜀地考察后，由蜀入粤。楚地（今湖北、湖南、江西一带）为必经之地，此行既为交通必经，亦为地理考察之延续。</p>
+                    </div>
+                    
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-date">戊子年秋 · 由蜀入楚</div>
+                            <div class="timeline-location">夔州 → 荆州</div>
+                            <div class="timeline-desc">由长江水道东下，经三峡进入楚地。考察长江中游水文特征，记录沿岸地理形胜。</div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-date">戊子年冬 · 太和山考察</div>
+                            <div class="timeline-location">武当山（太和山）</div>
+                            <div class="timeline-desc">专程登山考察道教圣地武当山，记录从山麓至金顶的完整路线，详述宫观布局与宗教文化。</div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-date">戊子年末 · 襄阳凭吊</div>
+                            <div class="timeline-location">襄阳府</div>
+                            <div class="timeline-desc">考察襄阳军事地理形势，凭吊历史遗迹，记录其"天下枢机"的战略地位与文化传统。</div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-date">己丑年春 · 楚江行旅</div>
+                            <div class="timeline-location">长江中游沿岸</div>
+                            <div class="timeline-desc">沿长江继续东行，系统考察楚地自然与人文环境，记录水文、地貌、物产、民俗等。</div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-date">己丑年仲夏 · 庐山览胜</div>
+                            <div class="timeline-location">庐山</div>
+                            <div class="timeline-desc">游庐山，结合《山海经》典故实地考察，详述各景点相对位置，阐发"地以人显"的人文地理思想。</div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-date">己丑年夏秋之交 · 继续南行</div>
+                            <div class="timeline-location">楚地南部 → 粤地</div>
+                            <div class="timeline-desc">完成楚地考察后，继续南行进入粤地，为后续《粤游》篇章的考察做准备。</div>
+                        </div>
+                    </div>
+                    
+                    <div class="insight-box">
+                        <div class="insight-title"><i class="fas fa-map-marked-alt"></i> 行迹特点</div>
+                        <p>王士性楚地行迹体现系统性地理考察特点：既关注自然地理（山川形胜、水文特征），又重视人文地理（历史遗迹、文化传统），并注意两者相互作用关系。</p>
+                    </div>
+                </div>
+                
+                <div id="locations" class="tab-content">
+                    <h3><i class="fas fa-map-marker-alt"></i> 楚地重要地点</h3>
+                    <p>点击地点卡片查看详细信息，或点击地图上的标记点：</p>
+                    
+                    <div class="location-grid">
+                        <div class="location-card" data-location="武当山">
+                            <div class="location-header">
+                                <i class="fas fa-mountain location-icon"></i>
+                                <span>武当山（太和山）</span>
+                            </div>
+                            <div class="location-body">
+                                <div class="location-type">道教圣地 · 自然人文</div>
+                                <p>道教名山，真武道场。王士性详考其地理形势、宫观布局与宗教文化，记录完整登山路线。</p>
+                            </div>
+                        </div>
+                        
+                        <div class="location-card" data-location="庐山">
+                            <div class="location-header">
+                                <i class="fas fa-tree location-icon"></i>
+                                <span>庐山</span>
+                            </div>
+                            <div class="location-body">
+                                <div class="location-type">人文名山 · 地以人显</div>
+                                <p>己丑年仲夏游览。结合《山海经》典故实地考察，阐发"地以人显"的人文地理思想。</p>
+                            </div>
+                        </div>
+                        
+                        <div class="location-card" data-location="襄阳">
+                            <div class="location-header">
+                                <i class="fas fa-landmark location-icon"></i>
+                                <span>襄阳府</span>
+                            </div>
+                            <div class="location-body">
+                                <div class="location-type">军事要塞 · 历史名城</div>
+                                <p>汉江下游、长江上游要地，自古兵家必争。王士性考察其城防体系、历史战役与文化传统。</p>
+                            </div>
+                        </div>
+                        
+                        <div class="location-card" data-location="荆州">
+                            <div class="location-header">
+                                <i class="fas fa-city location-icon"></i>
+                                <span>荆州府</span>
+                            </div>
+                            <div class="location-body">
+                                <div class="location-type">楚文化中心 · 长江要津</div>
+                                <p>楚文化发祥地之一，长江中游重要城市。王士性记录其历史沿革与地理形胜。</p>
+                            </div>
+                        </div>
+                        
+                        <div class="location-card" data-location="汉口">
+                            <div class="location-header">
+                                <i class="fas fa-water location-icon"></i>
+                                <span>汉口镇</span>
+                            </div>
+                            <div class="location-body">
+                                <div class="location-type">商业重镇 · 水陆枢纽</div>
+                                <p>明代中后期兴起的长江中游商业重镇，水陆交通枢纽。王士性关注其商业繁荣与地理优势。</p>
+                            </div>
+                        </div>
+                        
+                        <div class="location-card" data-location="岳阳">
+                            <div class="location-header">
+                                <i class="fas fa-tower location-icon"></i>
+                                <span>岳阳府</span>
+                            </div>
+                            <div class="location-body">
+                                <div class="location-type">湖湘门户 · 文化名城</div>
+                                <p>洞庭湖入长江口，湖湘门户。王士性游岳阳楼，记其"洞庭天下水，岳阳天下楼"之胜。</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="insight-box">
+                        <div class="insight-title"><i class="fas fa-eye"></i> 观察视角</div>
+                        <p>王士性对楚地地点的观察体现多重维度：自然形胜、历史地位、文化内涵、经济功能、战略价值等，形成综合性的地理认知体系。</p>
+                    </div>
+                </div>
+                
+                <div id="insights" class="tab-content">
+                    <h3><i class="fas fa-brain"></i> 王士性的地理见解</h3>
+                    
+                    <div class="insight-box">
+                        <div class="insight-title"><i class="fas fa-mountain"></i> 自然地理观察</div>
+                        <p>王士性在楚游中系统观察记录了多种自然地理现象：</p>
+                        <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                            <li><span class="highlight">水文特征</span>：长江中游河道变迁、汛期特征、支流分布</li>
+                            <li><span class="highlight">地貌形态</span>：山地（武当山、庐山）、丘陵、平原（江汉平原）的分布与特征</li>
+                            <li><span class="highlight">气候物产</span>：楚地气候特点与相应物产分布的关系</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="insight-box">
+                        <div class="insight-title"><i class="fas fa-users"></i> 人文地理思想</div>
+                        <p>《楚游上》集中体现了王士性的人文地理学思想：</p>
+                        <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                            <li><span class="highlight">"地以人显"观念</span>：在《庐山游记》中明确提出，强调人文活动赋予地理空间意义</li>
+                            <li><span class="highlight">历史地理视角</span>：注重地理环境的历史变迁与延续性</li>
+                            <li><span class="highlight">文化地理意识</span>：关注地域文化特征与地理环境的关系</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="insight-box">
+                        <div class="insight-title"><i class="fas fa-book"></i> 文献征引特点</div>
+                        <p>王士性在楚游记述中广泛征引文献，体现其学术素养：</p>
+                        <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                            <li><span class="highlight">地理典籍</span>：引用《山海经》、《水经注》等考证地理沿革</li>
+                            <li><span class="highlight">历史文献</span>：引用史书、地方志说明历史事件与人物</li>
+                            <li><span class="highlight">文学典故</span>：引用诗词文赋增强描述感染力</li>
+                            <li><span class="highlight">实地验证</span>：注重文献记载与实地考察的对照验证</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="literary-excerpt">
+                        "地理之学，非独记山川形势而已，当考其人文之盛衰，察其风俗之醇薄，究其物产之丰歉，然后可以言地理。余游楚地，既览其山川之胜，复考其人文之迹，乃知地因人而显，人因地而传，相得益彰。"
+                        <div class="quote-source">——王士性地理学思想概括</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>本交互地图基于王士性《广志绎》卷六《楚游上》内容制作 | 展现明代中后期楚地自然与人文景观</p>
+        <p>© 2023 明代地理文献数字化项目 | 王士性地理考察路线可视化系统</p>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // 初始化地图 - 以楚地为中心
+        const map = L.map('map').setView([30.5, 112.0], 7);
+        
+        // 添加地图图层 - 使用古风地图风格
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 12,
+            minZoom: 5
+        }).addTo(map);
+        
+        // 王士性楚地行迹主要地点坐标
+        const locations = {
+            "武当山": { 
+                lat: 32.40, 
+                lng: 111.00, 
+                type: "道教圣地", 
+                color: "#1a472a", 
+                description: "道教名山，真武道场。王士性详考其地理形势、宫观布局与宗教文化，记录完整登山路线。",
+                essay: "《太和山游记》"
+            },
+            "襄阳": { 
+                lat: 32.02, 
+                lng: 112.15, 
+                type: "军事要塞", 
+                color: "#b8860b", 
+                description: "汉江下游、长江上游要地，自古兵家必争。王士性考察其城防体系、历史战役与文化传统。",
+                essay: "《吊襄文》"
+            },
+            "荆州": { 
+                lat: 30.35, 
+                lng: 112.18, 
+                type: "楚文化中心", 
+                color: "#2c5530", 
+                description: "楚文化发祥地之一，长江中游重要城市。王士性记录其历史沿革与地理形胜。",
+                essay: "《楚江识行》"
+            },
+            "汉口": { 
+                lat: 30.58, 
+                lng: 114.27, 
+                type: "商业重镇", 
+                color: "#5a3921", 
+                description: "明代中后期兴起的长江中游商业重镇，水陆交通枢纽。王士性关注其商业繁荣与地理优势。",
+                essay: "《楚江识行》"
+            },
+            "岳阳": { 
+                lat: 29.37, 
+                lng: 113.12, 
+                type: "湖湘门户", 
+                color: "#2c5530", 
+                description: "洞庭湖入长江口，湖湘门户。王士性游岳阳楼，记其'洞庭天下水，岳阳天下楼'之胜。",
+                essay: "《楚江识行》"
+            },
+            "庐山": { 
+                lat: 29.55, 
+                lng: 115.98, 
+                type: "人文名山", 
+                color: "#1a472a", 
+                description: "己丑年仲夏游览。结合《山海经》典故实地考察，阐发'地以人显'的人文地理思想。",
+                essay: "《庐山游记》"
+            }
+        };
+        
+        // 行程路线坐标（王士性楚地行迹路线）
+        const routeCoordinates = [
+            [31.05, 109.5],   // 夔州（入楚起点）
+            [30.35, 112.18],  // 荆州
+            [32.02, 112.15],  // 襄阳
+            [32.40, 111.00],  // 武当山
+            [32.02, 112.15],  // 返回襄阳
+            [30.58, 114.27],  // 汉口
+            [30.35, 112.18],  // 返回荆州
+            [29.37, 113.12],  // 岳阳
+            [29.55, 115.98],  // 庐山
+            [28.20, 116.98]   // 继续南行
+        ];
+        
+        // 绘制路线
+        const routeLine = L.polyline(routeCoordinates, {
+            color: '#1a472a',
+            weight: 5,
+            opacity: 0.8,
+            dashArray: '15, 10'
+        }).addTo(map);
+        
+        // 添加路线起点和终点标记
+        const startMarker = L.circleMarker([routeCoordinates[0][0], routeCoordinates[0][1]], {
+            color: '#1a472a',
+            fillColor: '#1a472a',
+            fillOpacity: 1,
+            radius: 10
+        }).addTo(map);
+        
+        startMarker.bindPopup(`
+            <div style="font-family: 'Microsoft YaHei', sans-serif; max-width: 250px;">
+                <h4 style="margin: 0 0 8px 0; color: #1a472a;">楚游起点</h4>
+                <p><strong>夔州（今重庆奉节）</strong></p>
+                <p>戊子年秋，王士性由蜀入楚，由此开始楚地考察。</p>
+            </div>
+        `);
+        
+        const endMarker = L.circleMarker([routeCoordinates[routeCoordinates.length-1][0], routeCoordinates[routeCoordinates.length-1][1]], {
+            color: '#b8860b',
+            fillColor: '#b8860b',
+            fillOpacity: 1,
+            radius: 10
+        }).addTo(map);
+        
+        endMarker.bindPopup(`
+            <div style="font-family: 'Microsoft YaHei', sans-serif; max-width: 250px;">
+                <h4 style="margin: 0 0 8px 0; color: #b8860b;">楚游终点</h4>
+                <p><strong>继续南行</strong></p>
+                <p>己丑年夏秋之交，王士性完成楚地考察，继续南行进入粤地。</p>
+            </div>
+        `);
+        
+        // 添加地点标记
+        const markers = {};
+        Object.keys(locations).forEach(locationName => {
+            const loc = locations[locationName];
+            const marker = L.circleMarker([loc.lat, loc.lng], {
+                color: loc.color,
+                fillColor: loc.color,
+                fillOpacity: 0.9,
+                radius: 12,
+                weight: 2
+            }).addTo(map);
+            
+            // 添加弹窗信息
+            marker.bindPopup(`
+                <div style="font-family: 'Microsoft YaHei', sans-serif; max-width: 300px;">
+                    <h3 style="margin: 0 0 10px 0; color: ${loc.color};">${locationName}</h3>
+                    <p><strong>类型：</strong> ${loc.type}</p>
+                    <p><strong>所属游记：</strong> ${loc.essay}</p>
+                    <p>${loc.description}</p>
+                    <p style="margin-top: 10px; font-size: 0.9em; color: #666;"><i>点击右侧对应游记查看更多</i></p>
+                </div>
+            `);
+            
+            // 保存标记引用
+            markers[locationName] = marker;
+        });
+        
+        // 添加特殊标记 - 武当山
+        const wudangMarker = L.circleMarker([locations["武当山"].lat, locations["武当山"].lng], {
+            color: '#1a472a',
+            fillColor: '#1a472a',
+            fillOpacity: 1,
+            radius: 14,
+            weight: 3
+        }).addTo(map);
+        
+        // 添加特殊标记 - 庐山
+        const lushanMarker = L.circleMarker([locations["庐山"].lat, locations["庐山"].lng], {
+            color: '#1a472a',
+            fillColor: '#1a472a',
+            fillOpacity: 1,
+            radius: 14,
+            weight: 3
+        }).addTo(map);
+        
+        // 标签切换功能
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // 移除所有active类
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                
+                // 激活当前标签
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+        
+        // 地点卡片点击事件
+        document.querySelectorAll('.location-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const locationName = card.getAttribute('data-location');
+                if (markers[locationName]) {
+                    markers[locationName].openPopup();
+                    map.setView([locations[locationName].lat, locations[locationName].lng], 10);
+                    
+                    // 切换到地点标签
+                    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                    document.querySelector('[data-tab="locations"]').classList.add('active');
+                    document.getElementById('locations').classList.add('active');
+                }
+            });
+        });
+        
+        // 地图控制功能
+        document.getElementById('showFullRoute').addEventListener('click', () => {
+            map.fitBounds(routeLine.getBounds());
+        });
+        
+        document.getElementById('focusWudang').addEventListener('click', () => {
+            map.setView([locations["武当山"].lat, locations["武当山"].lng], 10);
+            wudangMarker.openPopup();
+            
+            // 切换到游记标签
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.querySelector('[data-tab="essays"]').classList.add('active');
+            document.getElementById('essays').classList.add('active');
+        });
+        
+        document.getElementById('focusLushan').addEventListener('click', () => {
+            map.setView([locations["庐山"].lat, locations["庐山"].lng], 10);
+            lushanMarker.openPopup();
+            
+            // 切换到游记标签
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.querySelector('[data-tab="essays"]').classList.add('active');
+            document.getElementById('essays').classList.add('active');
+        });
+        
+        document.getElementById('focusXiangyang').addEventListener('click', () => {
+            map.setView([locations["襄阳"].lat, locations["襄阳"].lng], 10);
+            markers["襄阳"].openPopup();
+            
+            // 切换到游记标签
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.querySelector('[data-tab="essays"]').classList.add('active');
+            document.getElementById('essays').classList.add('active');
+        });
+        
+        // 初始显示完整路线
+        map.fitBounds(routeLine.getBounds());
+        
+        // 添加比例尺
+        L.control.scale({imperial: false}).addTo(map);
+        
+        // 添加自定义图例
+        const legend = L.control({position: 'bottomright'});
+        legend.onAdd = function(map) {
+            const div = L.DomUtil.create('div', 'info legend');
+            div.style.backgroundColor = 'white';
+            div.style.padding = '10px';
+            div.style.borderRadius = '5px';
+            div.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+            div.innerHTML = `
+                <h4 style="margin:0 0 8px 0; color: #1a472a;">图例</h4>
+                <div style="display:flex; align-items:center; margin-bottom:5px;">
+                    <div style="width:12px; height:12px; border-radius:50%; background:#1a472a; margin-right:8px;"></div>
+                    <span>主要地点</span>
+                </div>
+                <div style="display:flex; align-items:center; margin-bottom:5px;">
+                    <div style="width:12px; height:12px; border-radius:50%; background:#b8860b; margin-right:8px;"></div>
+                    <span>行程起止点</span>
+                </div>
+                <div style="display:flex; align-items:center;">
+                    <div style="width:100%; height:3px; background:#1a472a; opacity:0.8; margin-right:8px; margin-top:3px;"></div>
+                    <span>行迹路线</span>
+                </div>
+            `;
+            return div;
+        };
+        legend.addTo(map);
+    </script>
+</body>
+</html>

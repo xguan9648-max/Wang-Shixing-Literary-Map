@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>王士性·文学地图 · 宦游纪行</title>
+    <!-- 完全在线资源，任何地方均可打开 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: 'Noto Serif SC', 'SimSun', '宋体', serif;
+            background: linear-gradient(135deg, #f5f0e6 0%, #e8e2d1 100%);
+            color: #2c2416;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.92);
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            padding: 30px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px double #c03a2b;
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            color: #2c3e6b;
+            margin-bottom: 10px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            font-family: 'Ma Shan Zheng', cursive;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #5d4c3a;
+            font-style: italic;
+            margin-bottom: 15px;
+        }
+        
+        .author-info {
+            display: inline-block;
+            background: linear-gradient(90deg, #2c3e6b, #3a5f52);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+        }
+        
+        .intro-card {
+            background: #f0eadc;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 30px 0;
+            border-left: 8px solid #8b7355;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .intro-card h2 {
+            color: #2c3e6b;
+            margin-bottom: 10px;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            background: #f9f5ed;
+            padding: 15px 25px;
+            border-radius: 60px;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.03);
+            border: 1px solid #d4c4a8;
+        }
+        
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #8b0000;
+            font-family: 'Ma Shan Zheng', cursive;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+            margin: 40px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #c5a26b;
+            color: #2f4b3c;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            color: #b35e2e;
+        }
+        
+        .map-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .map-card {
+            background: #fefcf7;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px -8px rgba(60, 40, 20, 0.2);
+            transition: all 0.25s ease;
+            border: 1px solid #dccdb6;
+        }
+        
+        .map-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 30px -10px #7a613c;
+            border-color: #b3814b;
+        }
+        
+        .card-header {
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #e7dccd, #f5ecdf);
+            border-bottom: 2px solid #d0b487;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .card-header i {
+            font-size: 2rem;
+            color: #966842;
+            width: 2rem;
+        }
+        
+        .card-header h3 {
+            font-size: 1.4rem;
+            color: #1f4935;
+        }
+        
+        .card-body {
+            padding: 20px;
+            background: rgba(255,252,242,0.7);
+            min-height: 100px;
+        }
+        
+        .card-body p {
+            color: #3b3a30;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .card-body i {
+            color: #a4662e;
+            width: 20px;
+        }
+        
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .tag {
+            background: #e6d7c0;
+            color: #3f3322;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            border: 1px solid #c7aa80;
+        }
+        
+        .card-footer {
+            background: #f0e5d6;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #be9f79;
+        }
+        
+        .year-badge {
+            background: #b58b5b;
+            color: #1a1f14;
+            padding: 5px 15px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: 1px solid #614328;
+        }
+        
+        .btn-map {
+            background: #446b54;
+            color: white;
+            padding: 8px 22px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+            border: 1px solid #2d5540;
+        }
+        
+        .btn-map:hover {
+            background: #2d5540;
+        }
+        
+        .btn-map i {
+            font-size: 0.9rem;
+        }
+        
+        .deploy-note {
+            background: #3e5d4c;
+            color: #f7efe1;
+            border-radius: 50px;
+            padding: 25px 30px;
+            margin: 40px 0 20px;
+            border: 2px solid #e3ba8a;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #d4b483;
+            color: #5c503b;
+        }
+        
+        .chop {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 2rem;
+            color: #4d6b53;
+            margin-top: 15px;
+            opacity: 0.7;
+        }
+        
+        @media (max-width: 768px) {
+            .title { font-size: 2rem; }
+            .container { padding: 20px; }
+            .map-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/3.32.1/minified.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+            <h1 class="title">王士性·文学地图 <span style="font-size: 1.2rem; color: #785f42;">1547-1598</span></h1>
+            <div class="subtitle">
+                <i class="fas fa-feather-alt"></i> 五岳寻仙 · 四海纪游 <i class="fas fa-scroll"></i>
+            </div>
+            <div class="author-info">
+                <i class="fas fa-user-graduate"></i> 王士性 (1547–1598) · 明代地理学家
+            </div>
+        </div>
+        
+        <!-- 引言 -->
+        <div class="intro-card">
+            <h2><i class="fas fa-quote-left"></i> 读万卷书，行万里路</h2>
+            <p>王士性，字恒叔，号太初，浙江临海人。与徐霞客并称明代两大旅行家，而年长三十余岁。宦游所至，必以著述记其山川、风俗、形胜，留下《五岳游草》《广志绎》等不朽著作。</p>
+            <p>本门户汇集十三幅互动地图，完整展现其从少年游学到晚年宦游的全过程。</p>
+        </div>
+        
+        <!-- 统计 -->
+        <div class="stats">
+            <div class="stat-item"><span class="stat-number">13</span><br>幅地图</div>
+            <div class="stat-item"><span class="stat-number">158+</span><br>州县行迹</div>
+            <div class="stat-item"><span class="stat-number">22</span><br>部游记</div>
+            <div class="stat-item"><span class="stat-number">51</span><br>年人生</div>
+        </div>
+        
+        <!-- ========= 第一类：综览 ========= -->
+        <div class="section-title"><i class="fas fa-globe-asia"></i> 综览 · 全时段行迹</div>
+        <div class="map-grid">
+            <div class="map-card">
+                <div class="card-header"><i class="fas fa-map"></i><h3>明代轨道·静态</h3></div>
+                <div class="card-body"><p><i class="fas fa-calendar"></i> 1547–1598 行迹全图</p><p><i class="fas fa-mountain"></i> 省名标注·疆域线</p><div class="tags"><span class="tag">CHGIS</span><span class="tag">万历十年</span></div></div>
+                <div class="card-footer"><span class="year-badge">1582底图</span><a class="btn-map" href="人生轨道静态明代地图.html" target="_blank"><i class="fas fa-external-link-alt"></i> 打开地图</a></div>
+            </div>
+            <div class="map-card">
+                <div class="card-header"><i class="fas fa-sliders-h"></i><h3>动态现代·滑块</h3></div>
+                <div class="card-body"><p><i class="fas fa-calendar"></i> 年份滑块控制</p><p><i class="fas fa-palette"></i> 事件颜色区分</p></div>
+                <div class="card-footer"><span class="year-badge">交互</span><a class="btn-map" href="人生轨道动态现代地图.html" target="_blank"><i class="fas fa-external-link-alt"></i> 打开地图</a></div>
+            </div>
+            <div class="map-card">
+                <div class="card-header"><i class="fas fa-graduation-cap"></i><h3>求学阶段·局部</h3></div>
+                <div class="card-body"><p><i class="fas fa-calendar"></i> 1547–1583</p><p>临海·杭州·南京·北京</p></div>
+                <div class="card-footer"><span class="year-badge">早期</span><a class="btn-map" href="求学阶段局部.html" target="_blank"><i class="fas fa-external-link-alt"></i> 打开地图</a></div>
+            </div>
+            <div class="map-card">
+                <div class="card-header"><i class="fas fa-tree"></i><h3>晚年行程</h3></div>
+                <div class="card-body"><p><i class="fas fa-calendar"></i> 1590–1598</p><p>云南·鸡足山·镇江病逝</p></div>
+                <div class="card-footer"><span class="year-badge">晚年</span><a class="btn-map" href="王士性晚年行程地图%20(1590-1598).html" target="_blank"><i class="fas fa-external-link-alt"></i> 打开地图</a></div>
+            </div>
+            <div class="map-card">
+                <div class="card-header"><i class="fas fa-draw-polygon"></i><h3>生平行程全图</h3></div>
+                <div class="card-body"><p>三时期筛选·大事记</p></div>
+                <div class="card-footer"><span class="year-badge">1547-98</span><a class="btn-map" href="王士性生平行程全图%20(1547-1598).html" target="_blank"><i class="fas fa-external-link-alt"></i> 打开地图</a></div>
+            </div>
+            <div class="map-card">
+                <div class="card-header"><i class="fas fa-hand-pointer"></i><h3>交互版现代地图</h3></div>
+                <div class="card-body"><p>侧边栏列表·点击定位</p></div>
+                <div class="card-footer"><span class="year-badge">全事件</span><a class="btn-map" href="交互版现代地图.html" target="_blank"><i class="fas fa-external-link-alt"></i> 打开地图</a></div>
+            </div>
+        </div>
+        
+        <!-- ========= 第二类：五岳·大江南北 ========= -->
+        <div class="section-title"><i class="fas fa-mountain"></i> 五岳游 · 大江南北</div>
+        <div class="map-grid">
+            <div class="map-card"><div class="card-header"><i class="fas fa-mountain-sun"></i><h3>五岳宦游</h3></div><div class="card-body"><p>嵩山·恒山·泰山·华山·衡山</p></div><div class="card-footer"><span class="year-badge">1581-89</span><a class="btn-map" href="五岳宦游纪行图.html" target="_blank">打开地图</a></div></div>
+            <div class="map-card"><div class="card-header"><i class="fas fa-water"></i><h3>大江南北诸游</h3></div><div class="card-body"><p>游梁记·西山·谒阙里·白云洞·入蜀</p></div><div class="card-footer"><span class="year-badge">1581-89</span><a class="btn-map" href="大江南北诸游.html" target="_blank">打开地图</a></div></div>
+            <div class="map-card"><div class="card-header"><i class="fas fa-fire"></i><h3>精神磁场热力图</h3></div><div class="card-body"><p>基于《广志绎》的文化强度分布</p></div><div class="card-footer"><span class="year-badge">热力</span><a class="btn-map" href="王士性精神磁场热力图.html" target="_blank">打开地图</a></div></div>
+        </div>
+        
+        <!-- ========= 第三类：吴越蜀三卷 ========= -->
+        <div class="section-title"><i class="fas fa-leaf"></i> 吴游 · 越游 · 蜀游</div>
+        <div class="map-grid">
+            <div class="map-card"><div class="card-header" style="background:#dde0c5;"><i class="fas fa-umbrella-beach"></i><h3>《吴游上》卷</h3></div><div class="card-body"><p>烟雨楼·虎丘·太湖·九华山·西湖六记</p></div><div class="card-footer"><span class="year-badge">江南</span><a class="btn-map" href="吴游上.html" target="_blank">打开地图</a></div></div>
+            <div class="map-card"><div class="card-header" style="background:#d0d2b0;"><i class="fas fa-mountain"></i><h3>《越游上》卷</h3></div><div class="card-body"><p>金华·温州·天台山·雁荡山·越游注</p></div><div class="card-footer"><span class="year-badge">越地</span><a class="btn-map" href="越游上.html" target="_blank">打开地图</a></div></div>
+            <div class="map-card"><div class="card-header" style="background:#cfcdaf;"><i class="fas fa-mountain"></i><h3>《蜀游上》卷</h3></div><div class="card-body"><p>入蜀记·峨眉山·成都·都江堰·乐山</p></div><div class="card-footer"><span class="year-badge">1588-89</span><a class="btn-map" href="蜀游上.html" target="_blank">打开地图</a></div></div>
+        </div>
+        
+        <!-- ========= 第四类：楚·滇·粤·分年 ========= -->
+        <div class="section-title"><i class="fas fa-dragon"></i> 楚 · 滇 · 粤 · 分年</div>
+        <div class="map-grid">
+            <div class="map-card"><div class="card-header"><i class="fas fa-tree"></i><h3>《楚游上》</h3></div><div class="card-body"><p>武当山·庐山·楚江识行·襄阳</p></div><div class="card-footer"><span class="year-badge">1588-89</span><a class="btn-map" href="楚游上.html" target="_blank">打开地图</a></div></div>
+            <div class="map-card"><div class="card-header"><i class="fas fa-umbrella"></i><h3>《滇粤游上》</h3></div><div class="card-body"><p>七星岩·昆明池·点苍山·鸡足山·矿业贝币</p></div><div class="card-footer"><span class="year-badge">1591</span><a class="btn-map" href="滇粤游上.html" target="_blank">打开地图</a></div></div>
+            <div class="map-card"><div class="card-header"><i class="fas fa-calendar"></i><h3>1584-1587</h3></div><div class="card-body"><p>滁州·温州·雁荡·四明·苏州·嘉兴</p></div><div class="card-footer"><span class="year-badge">筛选</span><a class="btn-map" href="王士性行程地图%20(1584-1587).html" target="_blank">打开地图</a></div></div>
+            <div class="map-card"><div class="card-header"><i class="fas fa-calendar"></i><h3>1588-1589</h3></div><div class="card-body"><p>孔林·泰山·西山·成都·桂林·广东</p></div><div class="card-footer"><span class="year-badge">1588-89</span><a class="btn-map" href="王士性行程地图%20(1588-1589).html" target="_blank">打开地图</a></div></div>
+            <div class="map-card"><div class="card-header"><i class="fas fa-pen"></i><h3>详细版明代地图</h3></div><div class="card-body"><p>省界·箭头·事件标签·年号标注</p></div><div class="card-footer"><span class="year-badge">重制</span><a class="btn-map" href="详细版明代地图.html" target="_blank">打开地图</a></div></div>
+            <div class="map-card"><div class="card-header"><i class="fas fa-child"></i><h3>早年·1547-1583</h3></div><div class="card-body"><p>临海·杭州·南京·北京·确山·登封</p></div><div class="card-footer"><span class="year-badge">早期</span><a class="btn-map" href="王士性行程地图%20(1547-1583).html" target="_blank">打开地图</a></div></div>
+        </div>
+        
+        <!-- 部署成功提示 -->
+        <div class="deploy-note">
+            <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+                <i class="fas fa-check-circle" style="font-size: 3rem; color: #fad98b;"></i>
+                <div>
+                    <h2 style="color: white;">✅ 门户就绪</h2>
+                    <p style="font-size: 1.1rem; margin-top: 5px;">
+                        <strong>本地浏览模式</strong>
+                    </p>
+                    <p style="margin-top: 10px;">点击上方卡片即可访问对应的地图。</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 页脚 -->
+        <div class="footer">
+            <p><i class="fas fa-map-marked-alt"></i> 基于哈佛CHGIS v6 · 《广志绎》 · 《五岳游草》</p>
+            <p>13幅地图已全部配置</p>
+            <div class="chop">王士性 · 地理精神 · 万历壬辰</div>
+        </div>
+    </div>
+    
+    <script>
+        console.log('王士性文学地图门户已加载');
+    </script>
+</body>
+</html>

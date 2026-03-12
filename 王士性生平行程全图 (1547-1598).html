@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>王士性生平行程全图 (1547-1598)</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft YaHei", sans-serif;
+            background-color: #f5f2e9;
+        }
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+        .info-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            max-width: 300px;
+        }
+        .location-label {
+            position: absolute;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 12px;
+            white-space: nowrap;
+            pointer-events: none;
+            border: 1px solid #ddd;
+        }
+        .event-marker {
+            background-color: #3388ff;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        .birth-marker {
+            background-color: #ff3333;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        .death-marker {
+            background-color: #555;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        .route-marker {
+            background-color: #ff8c00;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        .legend {
+            line-height: 18px;
+            color: #555;
+            font-size: 12px;
+        }
+        h1 {
+            margin-top: 0;
+            font-size: 16px;
+            color: #333;
+            text-align: center;
+        }
+        .period-filter {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+        .timeline {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            max-height: 200px;
+            overflow-y: auto;
+            width: 250px;
+        }
+        .timeline-event {
+            margin-bottom: 5px;
+            padding-bottom: 5px;
+            border-bottom: 1px dashed #eee;
+        }
+        .timeline-year {
+            font-weight: bold;
+            color: #8B0000;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/3.32.1/minified.js"></script>
+
+    <style class="mobile-patch">
+        /* 移动端适配补丁 */
+        @media (max-width: 768px) {
+            .leaflet-control-container .leaflet-top { top: 10px; }
+            .leaflet-control-container .leaflet-bottom { bottom: 10px; }
+            .info-panel, .legend, .time-control {
+                max-width: 95% !important;
+                font-size: 12px;
+                left: 2.5% !important;
+                right: 2.5% !important;
+            }
+            .info-panel {
+                max-height: 30vh;
+                bottom: 0;
+                top: auto;
+                border-radius: 10px 10px 0 0;
+            }
+            h1 { font-size: 1.2rem !important; }
+            #map { height: 60vh !important; }
+        }
+    </style>
+
+</head>
+<body>
+    <div id="map"></div>
+    <div class="info-panel">
+        <h1>王士性生平行程全图 (1547-1598)</h1>
+        <div class="legend">
+            <div><i style="background: #ff3333; width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:5px;"></i> 出生地</div>
+            <div><i style="background: #3388ff; width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px;"></i> 事件地点</div>
+            <div><i style="background: #555; width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:5px;"></i> 逝世地</div>
+            <div><i style="background: #ff8c00; width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px;"></i> 行程路线</div>
+        </div>
+    </div>
+    <div class="period-filter">
+        <h3>时期筛选</h3>
+        <label><input type="checkbox" class="period-checkbox" value="early" checked> 早年(1547-1583)</label><br>
+        <label><input type="checkbox" class="period-checkbox" value="mid" checked> 壮年(1584-1589)</label><br>
+        <label><input type="checkbox" class="period-checkbox" value="late" checked> 晚年(1590-1598)</label>
+    </div>
+    <div class="timeline">
+        <h3>王士性生平大事记</h3>
+        <div class="timeline-event"><span class="timeline-year">1547</span> 生于浙江临海县</div>
+        <div class="timeline-event"><span class="timeline-year">1569</span> 杭州游学</div>
+        <div class="timeline-event"><span class="timeline-year">1578</span> 作《游武林湖山六记》</div>
+        <div class="timeline-event"><span class="timeline-year">1581</span> 著《嵩山记》《游梁记》</div>
+        <div class="timeline-event"><span class="timeline-year">1583</span> 任礼科给事中</div>
+        <div class="timeline-event"><span class="timeline-year">1588</span> 游泰山作《岱游记》</div>
+        <div class="timeline-event"><span class="timeline-year">1591</span> 云南考察，作多篇游记</div>
+        <div class="timeline-event"><span class="timeline-year">1593</span> 任河南提学，升山东布政司</div>
+        <div class="timeline-event"><span class="timeline-year">1597</span> 刻《广志绎》</div>
+        <div class="timeline-event"><span class="timeline-year">1598</span> 赴南京途中病逝镇江</div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // 初始化地图，中心点设为中原地区
+        var map = L.map('map').setView([34.0, 110.0], 5);
+
+        // 使用标准地图作为底图
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            minZoom: 4,
+            maxZoom: 8
+        }).addTo(map);
+
+        // 地点数据（整合四个时期）
+        var locations = [
+            // 早年(1547-1583)
+            {
+                id: 0,
+                name: "台州府临海县",
+                event: "1547年出生",
+                lat: 28.8567,
+                lng: 121.1389,
+                year: 1547,
+                period: "early",
+                type: "birth"
+            },
+            {
+                id: 1,
+                name: "杭州府",
+                event: "1569年游学\n1578年作《游武林湖山六记》",
+                lat: 30.2741,
+                lng: 120.1551,
+                year: 1569,
+                period: "early",
+                type: "event"
+            },
+            {
+                id: 2,
+                name: "应天府(南京)",
+                event: "1571年游历\n1574年再访",
+                lat: 32.0603,
+                lng: 118.7969,
+                year: 1571,
+                period: "early",
+                type: "event"
+            },
+            {
+                id: 3,
+                name: "河南府登封县(嵩山)",
+                event: "1581年著《嵩山记》《游梁记》",
+                lat: 34.4840,
+                lng: 113.0366,
+                year: 1581,
+                period: "early",
+                type: "event"
+            },
+            {
+                id: 4,
+                name: "京师(北京)",
+                event: "1583年任礼科给事中",
+                lat: 39.9042,
+                lng: 116.4074,
+                year: 1583,
+                period: "early",
+                type: "event"
+            },
+            // 壮年(1584-1589)
+            {
+                id: 5,
+                name: "济南府(孔林)",
+                event: "1588年，作《谒阙里记》",
+                lat: 35.5928,
+                lng: 116.9911,
+                year: 1588,
+                period: "mid",
+                type: "event"
+            },
+            {
+                id: 6,
+                name: "泰安州(泰山)",
+                event: "1588年，作《岱游记》",
+                lat: 36.2556,
+                lng: 117.1000,
+                year: 1588,
+                period: "mid",
+                type: "event"
+            },
+            {
+                id: 7,
+                name: "成都府",
+                event: "1588年，游峨眉山作《峨眉山游记》",
+                lat: 30.5728,
+                lng: 104.0668,
+                year: 1588,
+                period: "mid",
+                type: "event"
+            },
+            {
+                id: 8,
+                name: "大同府(恒山)",
+                event: "1588年，作《恒游记》",
+                lat: 39.6746,
+                lng: 113.7321,
+                year: 1588,
+                period: "mid",
+                type: "event"
+            },
+            {
+                id: 9,
+                name: "桂林府",
+                event: "1589年，作《桂海志续》、《游七星岩记》",
+                lat: 25.2816,
+                lng: 110.2865,
+                year: 1589,
+                period: "mid",
+                type: "event"
+            },
+            // 晚年(1590-1598)
+            {
+                id: 10,
+                name: "昆明府",
+                event: "1591年，作《泛舟昆明池历太华诸峰记》",
+                lat: 25.0435,
+                lng: 102.7092,
+                year: 1591,
+                period: "late",
+                type: "event"
+            },
+            {
+                id: 11,
+                name: "大理府(鸡足山)",
+                event: "1591年，作《游鸡足山记》",
+                lat: 25.9422,
+                lng: 100.4024,
+                year: 1591,
+                period: "late",
+                type: "event"
+            },
+            {
+                id: 12,
+                name: "开封府",
+                event: "1593年，改任河南提学",
+                lat: 34.7971,
+                lng: 114.3072,
+                year: 1593,
+                period: "late",
+                type: "event"
+            },
+            {
+                id: 13,
+                name: "顺天府(北京)",
+                event: "1595年，被召回京都",
+                lat: 39.9042,
+                lng: 116.4074,
+                year: 1595,
+                period: "late",
+                type: "event"
+            },
+            {
+                id: 14,
+                name: "应天府(南京)",
+                event: "1596年，任南京鸿胪寺卿",
+                lat: 32.0603,
+                lng: 118.7969,
+                year: 1596,
+                period: "late",
+                type: "event"
+            },
+            {
+                id: 15,
+                name: "临海县",
+                event: "1597年，刻《广志绎》",
+                lat: 28.8567,
+                lng: 121.1389,
+                year: 1597,
+                period: "late",
+                type: "event"
+            },
+            {
+                id: 16,
+                name: "镇江府",
+                event: "1598年，赴南京途中病逝",
+                lat: 32.1879,
+                lng: 119.4258,
+                year: 1598,
+                period: "late",
+                type: "death"
+            }
+        ];
+
+        // 行程路线数据（精选主要路线）
+        var routes = [
+            // 早年路线
+            {from: 0, to: 1, year: 1569, period: "early", desc: "临海→杭州 游学"},
+            {from: 1, to: 2, year: 1571, period: "early", desc: "杭州→南京 游历"},
+            {from: 2, to: 3, year: 1581, period: "early", desc: "南京→嵩山 考察"},
+            {from: 3, to: 4, year: 1583, period: "early", desc: "嵩山→北京 任职"},
+            // 壮年路线
+            {from: 4, to: 5, year: 1588, period: "mid", desc: "北京→孔林 考察"},
+            {from: 5, to: 6, year: 1588, period: "mid", desc: "孔林→泰山 考察"},
+            {from: 6, to: 7, year: 1588, period: "mid", desc: "泰山→成都 西行"},
+            {from: 7, to: 8, year: 1588, period: "mid", desc: "成都→恒山 北上"},
+            {from: 8, to: 9, year: 1589, period: "mid", desc: "恒山→桂林 南下"},
+            // 晚年路线
+            {from: 0, to: 10, year: 1591, period: "late", desc: "临海→昆明 考察"},
+            {from: 10, to: 11, year: 1591, period: "late", desc: "昆明→鸡足山 考察"},
+            {from: 11, to: 12, year: 1593, period: "late", desc: "鸡足山→开封 赴任"},
+            {from: 12, to: 13, year: 1595, period: "late", desc: "开封→北京 召回"},
+            {from: 13, to: 14, year: 1596, period: "late", desc: "北京→南京 赴任"},
+            {from: 14, to: 15, year: 1597, period: "late", desc: "南京→临海 返乡"},
+            {from: 15, to: 16, year: 1598, period: "late", desc: "临海→镇江 赴任途中"}
+        ];
+
+        // 存储所有标记和路线
+        var allMarkers = [];
+        var allRoutes = [];
+        var allLabels = [];
+
+        // 添加标记点和标签
+        function addMarkersAndRoutes() {
+            // 清除现有标记和路线
+            allMarkers.forEach(marker => map.removeLayer(marker));
+            allRoutes.forEach(route => map.removeLayer(route));
+            allLabels.forEach(label => map.removeLayer(label));
+            
+            allMarkers = [];
+            allRoutes = [];
+            allLabels = [];
+            
+            // 获取选中的时期
+            var selectedPeriods = [];
+            document.querySelectorAll('.period-checkbox:checked').forEach(function(checkbox) {
+                selectedPeriods.push(checkbox.value);
+            });
+            
+            // 添加标记点
+            locations.forEach(function(loc) {
+                if (selectedPeriods.includes(loc.period)) {
+                    var marker;
+                    if (loc.type === "birth") {
+                        marker = L.circleMarker([loc.lat, loc.lng], {
+                            className: 'birth-marker',
+                            radius: 8
+                        });
+                    } else if (loc.type === "death") {
+                        marker = L.circleMarker([loc.lat, loc.lng], {
+                            className: 'death-marker',
+                            radius: 8
+                        });
+                    } else {
+                        marker = L.circleMarker([loc.lat, loc.lng], {
+                            className: 'event-marker',
+                            radius: 6
+                        });
+                    }
+                    
+                    marker.addTo(map);
+                    allMarkers.push(marker);
+                    
+                    // 创建并添加文本标签
+                    var labelText = `<strong>${loc.name.split('(')[0]}</strong><br>${loc.year}年`;
+                    var firstEventLine = loc.event.split('\n')[0];
+                    if (firstEventLine.length > 12) {
+                        labelText += `<br>${firstEventLine.substring(0, 12)}...`;
+                    } else {
+                        labelText += `<br>${firstEventLine}`;
+                    }
+                    
+                    var label = L.divIcon({
+                        className: 'location-label',
+                        html: labelText,
+                        iconSize: [100, 50]
+                    });
+                    
+                    var labelMarker = L.marker([loc.lat, loc.lng], {
+                        icon: label,
+                        zIndexOffset: 1000
+                    }).addTo(map);
+                    
+                    allLabels.push(labelMarker);
+                    
+                    // 添加完整信息的弹窗
+                    marker.bindPopup(`<b>${loc.name}</b><br>${loc.year}年<br>${loc.event.replace(/\n/g, '<br>')}`);
+                }
+            });
+            
+            // 绘制行程路线
+            routes.forEach(function(route) {
+                if (selectedPeriods.includes(route.period)) {
+                    var fromLoc = locations[route.from];
+                    var toLoc = locations[route.to];
+                    
+                    if (fromLoc && toLoc && selectedPeriods.includes(fromLoc.period) && selectedPeriods.includes(toLoc.period)) {
+                        var polyline = L.polyline(
+                            [[fromLoc.lat, fromLoc.lng], [toLoc.lat, toLoc.lng]],
+                            {
+                                color: '#ff8c00',
+                                weight: 2,
+                                opacity: 0.7,
+                                dashArray: '5, 5'
+                            }
+                        ).addTo(map);
+                        
+                        allRoutes.push(polyline);
+                        
+                        // 在路线中点添加年份标记
+                        var midLat = (fromLoc.lat + toLoc.lat) / 2;
+                        var midLng = (fromLoc.lng + toLoc.lng) / 2;
+                        
+                        var routeMarker = L.circleMarker([midLat, midLng], {
+                            className: 'route-marker',
+                            radius: 5
+                        }).addTo(map)
+                        .bindPopup(`<b>${route.year}年行程</b><br>${route.desc}`);
+                        
+                        allMarkers.push(routeMarker);
+                    }
+                }
+            });
+        }
+
+        // 初始添加标记和路线
+        addMarkersAndRoutes();
+
+        // 时期筛选事件
+        document.querySelectorAll('.period-checkbox').forEach(function(checkbox) {
+            checkbox.addEventListener('change', addMarkersAndRoutes);
+        });
+    </script>
+</body>
+</html>

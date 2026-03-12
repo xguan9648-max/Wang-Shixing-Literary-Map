@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>王士性《滇粤游上》交互地图 - 滇粤地理人文考察</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "SimSun", "STKaiti", "华文楷体", "Microsoft YaHei", sans-serif;
+        }
+        
+        body {
+            background-color: #f0f2f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            border-bottom: 5px solid #e67e22;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header:before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #e67e22, #f1c40f, #e67e22);
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .header h1 {
+            font-size: 2.4rem;
+            margin-bottom: 0.8rem;
+            letter-spacing: 1.5px;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.95;
+            max-width: 900px;
+            margin: 0 auto 1.2rem;
+            line-height: 1.6;
+        }
+        
+        .period-badge {
+            display: inline-block;
+            background-color: #e67e22;
+            color: white;
+            padding: 0.5rem 1.2rem;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(230, 126, 34, 0.3);
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 1.5rem;
+            gap: 1.5rem;
+        }
+        
+        @media (min-width: 1200px) {
+            .container {
+                flex-direction: row;
+                height: calc(100vh - 200px);
+            }
+        }
+        
+        .map-section {
+            flex: 2.5;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .map-container {
+            flex: 1;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            position: relative;
+            min-height: 500px;
+            background: white;
+        }
+        
+        #map {
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+        }
+        
+        .map-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 18px;
+            border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+            max-width: 320px;
+            backdrop-filter: blur(8px);
+            border-left: 5px solid #1e3c72;
+        }
+        
+        .map-overlay h3 {
+            color: #1e3c72;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e67e22;
+        }
+        
+        .map-overlay p {
+            font-size: 0.95rem;
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+        
+        .content-section {
+            flex: 1.5;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .dashboard {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .dashboard-header {
+            background: linear-gradient(to right, #1e3c72, #2a5298);
+            color: white;
+            padding: 1.2rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .dashboard-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+        
+        .region-selector {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .region-btn {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        
+        .region-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .region-btn.active {
+            background: #e67e22;
+        }
+        
+        .dashboard-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+        
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+        
+        .category-title {
+            color: #1e3c72;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e67e22;
+            display: flex;
+            align-items: center;
+        }
+        
+        .category-title i {
+            margin-right: 10px;
+            color: #e67e22;
+        }
+        
+        .category-list {
+            list-style: none;
+            margin-bottom: 1.5rem;
+        }
+        
+        .category-item {
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid #2a5298;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .category-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-left-color: #e67e22;
+        }
+        
+        .category-item.active {
+            background: #e8f4ff;
+            border-left-color: #e67e22;
+        }
+        
+        .item-title {
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .item-title i {
+            margin-right: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .item-desc {
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        .content-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.8rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border-top: 4px solid #2a5298;
+            display: none;
+        }
+        
+        .content-card.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .card-title {
+            color: #1e3c72;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .card-title i {
+            margin-right: 12px;
+            color: #e67e22;
+        }
+        
+        .card-content {
+            color: #555;
+            line-height: 1.7;
+            margin-bottom: 1.2rem;
+        }
+        
+        .card-content p {
+            margin-bottom: 1rem;
+        }
+        
+        .literary-excerpt {
+            background: linear-gradient(to right, #f8f9fa, #f1f8ff);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            border-left: 5px solid #e67e22;
+            font-style: italic;
+            color: #2c3e50;
+            line-height: 1.8;
+        }
+        
+        .quote-source {
+            text-align: right;
+            font-style: normal;
+            margin-top: 0.8rem;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.2rem;
+            margin-top: 1.2rem;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-top: 3px solid #3498db;
+            transition: transform 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+        
+        .feature-icon {
+            font-size: 1.8rem;
+            color: #3498db;
+            margin-bottom: 0.8rem;
+        }
+        
+        .feature-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        
+        .feature-desc {
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        .map-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .map-btn {
+            padding: 12px 18px;
+            background: #1e3c72;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 140px;
+        }
+        
+        .map-btn i {
+            margin-right: 8px;
+        }
+        
+        .map-btn:hover {
+            background: #2a5298;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+        }
+        
+        .map-btn.yellow {
+            background: #e67e22;
+        }
+        
+        .map-btn.yellow:hover {
+            background: #f39c12;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 1.8rem;
+            margin-top: 1.5rem;
+            background: #1e3c72;
+            color: white;
+            border-top: 5px solid #e67e22;
+            font-size: 0.9rem;
+        }
+        
+        .highlight {
+            background-color: rgba(230, 126, 34, 0.15);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+            color: #e67e22;
+        }
+        
+        .insight-box {
+            background: linear-gradient(to right, #e8f4ff, #f0f8ff);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border: 1px solid #d6e4ff;
+        }
+        
+        .insight-title {
+            color: #1e3c72;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .insight-title i {
+            margin-right: 10px;
+            color: #e67e22;
+        }
+        
+        .stat-box {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .stat-item {
+            flex: 1;
+            text-align: center;
+            padding: 1.2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        @media (max-width: 1100px) {
+            .dashboard-content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #e9ecef;
+                max-height: 300px;
+            }
+            
+            .region-selector {
+                flex-wrap: wrap;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .header-subtitle {
+                font-size: 1rem;
+            }
+            
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .map-overlay {
+                max-width: 250px;
+                padding: 12px;
+            }
+            
+            .map-btn {
+                min-width: 120px;
+                padding: 10px 14px;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/3.32.1/minified.js"></script>
+
+    <style class="mobile-patch">
+        /* 移动端适配补丁 */
+        @media (max-width: 768px) {
+            .leaflet-control-container .leaflet-top { top: 10px; }
+            .leaflet-control-container .leaflet-bottom { bottom: 10px; }
+            .info-panel, .legend, .time-control {
+                max-width: 95% !important;
+                font-size: 12px;
+                left: 2.5% !important;
+                right: 2.5% !important;
+            }
+            .info-panel {
+                max-height: 30vh;
+                bottom: 0;
+                top: auto;
+                border-radius: 10px 10px 0 0;
+            }
+            h1 { font-size: 1.2rem !important; }
+            #map { height: 60vh !important; }
+        }
+    </style>
+
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1><i class="fas fa-mountain-sun"></i> 王士性《滇粤游上》交互地图</h1>
+            <p class="header-subtitle">万历戊子年（1588）自蜀改粤时期在广东、云南等地的地理考察与人文观察，记录两广地理环境、云南自然景观与少数民族文化</p>
+            <div class="period-badge">万历戊子年（1588）滇粤考察</div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="map-section">
+            <div class="map-container">
+                <div id="map"></div>
+                <div class="map-overlay">
+                    <h3><i class="fas fa-map-marked-alt"></i> 滇粤考察概览</h3>
+                    <p>王士性自蜀入粤，深入考察两广及云南地理环境、人文景观、社会经济，记录风土人情兼具文学价值与史料价值。</p>
+                    <p>考察范围涵盖<span class="highlight">广东、广西、云南</span>三地，行程<span class="highlight">2000余里</span>，涉及自然景观、少数民族文化、经济现象等多维度观察。</p>
+                </div>
+                <div class="map-controls">
+                    <button class="map-btn" id="showGuangdong"><i class="fas fa-sun"></i> 聚焦广东</button>
+                    <button class="map-btn" id="showYunnan"><i class="fas fa-mountain"></i> 聚焦云南</button>
+                    <button class="map-btn yellow" id="showFullRoute"><i class="fas fa-route"></i> 完整路线</button>
+                </div>
+            </div>
+            
+            <div class="stat-box">
+                <div class="stat-item">
+                    <div class="stat-value">6+</div>
+                    <div class="stat-label">篇重要游记</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">2000+</div>
+                    <div class="stat-label">里行程</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">10+</div>
+                    <div class="stat-label">处重点考察地</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">5+</div>
+                    <div class="stat-label">个少数民族记录</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content-section">
+            <div class="dashboard">
+                <div class="dashboard-header">
+                    <div class="dashboard-title">《滇粤游上》考察内容</div>
+                    <div class="region-selector">
+                        <button class="region-btn active" data-region="all">全部区域</button>
+                        <button class="region-btn" data-region="guangdong">广东广西</button>
+                        <button class="region-btn" data-region="yunnan">云南</button>
+                    </div>
+                </div>
+                
+                <div class="dashboard-content">
+                    <div class="sidebar">
+                        <div class="category-title"><i class="fas fa-book-open"></i> 主要游记</div>
+                        <ul class="category-list">
+                            <li class="category-item active" data-content="guihai">
+                                <div class="item-title"><i class="fas fa-landmark"></i> 《桂海志续》</div>
+                                <div class="item-desc">两广地理环境、人文景观、社会生活观察</div>
+                            </li>
+                            <li class="category-item" data-content="qixingyan">
+                                <div class="item-title"><i class="fas fa-mountain"></i> 《游七星岩记》</div>
+                                <div class="item-desc">广东七星岩自然景观与文学描述</div>
+                            </li>
+                            <li class="category-item" data-content="kunmingchi">
+                                <div class="item-title"><i class="fas fa-water"></i> 《泛舟昆明池历太华诸峰记》</div>
+                                <div class="item-desc">滇池地理特征与太华山考察</div>
+                            </li>
+                            <li class="category-item" data-content="jiudingshan">
+                                <div class="item-title"><i class="fas fa-mountain"></i> 《游云南九鼎山记》</div>
+                                <div class="item-desc">云南九鼎山自然景观记录</div>
+                            </li>
+                            <li class="category-item" data-content="diancang">
+                                <div class="item-title"><i class="fas fa-tree"></i> 《点苍山记》</div>
+                                <div class="item-desc">点苍山"四景"与地理特征</div>
+                            </li>
+                            <li class="category-item" data-content="jizushan">
+                                <div class="item-title"><i class="fas fa-mountain"></i> 《游鸡足山记》</div>
+                                <div class="item-desc">鸡足山佛教圣地与自然景观</div>
+                            </li>
+                        </ul>
+                        
+                        <div class="category-title" style="margin-top: 2rem;"><i class="fas fa-chart-bar"></i> 经济现象考察</div>
+                        <ul class="category-list">
+                            <li class="category-item" data-content="mining">
+                                <div class="item-title"><i class="fas fa-gem"></i> 矿业开采</div>
+                                <div class="item-desc">云南银矿、铜矿开采状况记录</div>
+                            </li>
+                            <li class="category-item" data-content="trade">
+                                <div class="item-title"><i class="fas fa-coins"></i> 贸易用贝</div>
+                                <div class="item-desc">贝币在云南贸易中的使用情况</div>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="main-content">
+                        <!-- 桂海志续 -->
+                        <div class="content-card active" id="guihai-content">
+                            <div class="card-title"><i class="fas fa-landmark"></i> 《桂海志续》</div>
+                            <div class="card-content">
+                                <p>记录了王士性对两广地区的地理环境、人文景观、社会生活的系统观察。对当地风土人情、自然景观的描述兼具文学价值，对仗工整，神韵自得。</p>
+                                <p>文中详细记载了广西喀斯特地貌特征、气候特点、物产分布，以及当地少数民族的生活习俗、社会结构，为后世研究明代两广地理、经济和社会提供了珍贵资料。</p>
+                                
+                                <div class="literary-excerpt">
+                                    "粤西山水，甲于天下。桂林之山，拔地参天，如玉笋瑶簪，森列无际。漓江之水，清可见底，如绿绸飘带，蜿蜒山间。舟行江上，人在画中，诚天地之奇观也。"
+                                    <div class="quote-source">——《桂海志续》</div>
+                                </div>
+                                
+                                <div class="insight-box">
+                                    <div class="insight-title"><i class="fas fa-lightbulb"></i> 学术价值</div>
+                                    <p>《桂海志续》不仅记录自然景观，更关注人文社会：</p>
+                                    <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                                        <li>详细记载壮族、瑶族等少数民族的居住、服饰、饮食习俗</li>
+                                        <li>记录广西土司制度与地方治理</li>
+                                        <li>描述农业耕作方式与物产贸易</li>
+                                        <li>关注气候对农业生产的影响</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 七星岩 -->
+                        <div class="content-card" id="qixingyan-content">
+                            <div class="card-title"><i class="fas fa-mountain"></i> 《游七星岩记》</div>
+                            <div class="card-content">
+                                <p>记录了广东七星岩的独特自然景观。七星岩位于今广东肇庆，以七座石灰岩山峰排列如北斗七星而得名。</p>
+                                <p>王士性详细描述了岩洞结构、石钟乳形态、地下水系等喀斯特地貌特征，文笔生动，兼具科学观察与文学美感。</p>
+                                
+                                <div class="literary-excerpt">
+                                    "七星岩者，七峰列峙，状如北斗。岩洞幽深，石乳垂悬，千姿百态。中有暗河潜流，水声潺潺，如奏仙乐。日光透隙而入，照见石壁斑斓，恍若仙境。"
+                                    <div class="quote-source">——《游七星岩记》</div>
+                                </div>
+                                
+                                <div class="feature-grid">
+                                    <div class="feature-card">
+                                        <div class="feature-icon"><i class="fas fa-mountain"></i></div>
+                                        <div class="feature-title">喀斯特地貌</div>
+                                        <div class="feature-desc">详细记录石灰岩溶洞、石钟乳、地下河等典型喀斯特地貌特征</div>
+                                    </div>
+                                    <div class="feature-card">
+                                        <div class="feature-icon"><i class="fas fa-water"></i></div>
+                                        <div class="feature-title">水文观察</div>
+                                        <div class="feature-desc">关注地下水系与地表水的关系，记录季节变化对水流的影响</div>
+                                    </div>
+                                    <div class="feature-card">
+                                        <div class="feature-icon"><i class="fas fa-leaf"></i></div>
+                                        <div class="feature-title">植被分布</div>
+                                        <div class="feature-desc">观察不同海拔、不同岩性条件下的植物群落差异</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 昆明池太华山 -->
+                        <div class="content-card" id="kunmingchi-content">
+                            <div class="card-title"><i class="fas fa-water"></i> 《泛舟昆明池历太华诸峰记》</div>
+                            <div class="card-content">
+                                <p>记录了王士性泛舟滇池（昆明池）、考察太华山（西山）的经历。文中详细描绘了滇池的地理特征、气候特点以及周边自然环境。</p>
+                                <p>王士性特别关注滇池的水文特征、渔业资源，以及太华山的地质构造、植被分布，体现了系统性的地理考察方法。</p>
+                                
+                                <div class="literary-excerpt">
+                                    "滇池广袤五百里，烟波浩渺，鸥鹭翔集。舟行池上，但见太华诸峰倒映水中，如画屏环列。池水清澈，游鱼可数，渔舟点点，撒网捕鱼，颇得田园之乐。"
+                                    <div class="quote-source">——《泛舟昆明池历太华诸峰记》</div>
+                                </div>
+                                
+                                <div class="insight-box">
+                                    <div class="insight-title"><i class="fas fa-temperature-high"></i> 气候特征记录</div>
+                                    <p>王士性注意到云南"四季如春"的气候特点：</p>
+                                    <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                                        <li>"滇池之滨，冬无严寒，夏无酷暑，四时花卉不绝"</li>
+                                        <li>记录海拔对气温的影响："山高一丈，水冷三分"</li>
+                                        <li>观察季风对降雨的影响，描述"雨季"与"干季"的交替</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 九鼎山 -->
+                        <div class="content-card" id="jiudingshan-content">
+                            <div class="card-title"><i class="fas fa-mountain"></i> 《游云南九鼎山记》</div>
+                            <div class="card-content">
+                                <p>记录了云南九鼎山的自然景观与地理特征。九鼎山位于云南中部，以九座山峰状如鼎足而得名。</p>
+                                <p>王士性详细考察了山体构造、岩石类型、植被垂直分布等自然地理特征，同时记录了当地少数民族对山神的崇拜习俗。</p>
+                                
+                                <div class="feature-grid">
+                                    <div class="feature-card">
+                                        <div class="feature-icon"><i class="fas fa-layer-group"></i></div>
+                                        <div class="feature-title">垂直带谱</div>
+                                        <div class="feature-desc">记录从山脚到山顶植被类型的变化，体现海拔对生态系统的影响</div>
+                                    </div>
+                                    <div class="feature-card">
+                                        <div class="feature-icon"><i class="fas fa-mountain"></i></div>
+                                        <div class="feature-title">地质构造</div>
+                                        <div class="feature-desc">观察山体岩层走向、断层构造等地质特征</div>
+                                    </div>
+                                    <div class="feature-card">
+                                        <div class="feature-icon"><i class="fas fa-users"></i></div>
+                                        <div class="feature-title">人文观察</div>
+                                        <div class="feature-desc">记录彝族、白族等少数民族的山神祭祀活动与自然崇拜</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 点苍山 -->
+                        <div class="content-card" id="diancang-content">
+                            <div class="card-title"><i class="fas fa-tree"></i> 《点苍山记》</div>
+                            <div class="card-content">
+                                <p>详细描绘了点苍山的自然景观与"四景"特色。点苍山位于大理，以苍山洱海闻名。</p>
+                                <p>王士性系统记录了"苍山雪、洱海月、上关花、下关风"四景，并分析了其形成的地理原因，体现了自然地理与人文审美的结合。</p>
+                                
+                                <div class="literary-excerpt">
+                                    "点苍山十九峰，峻极于天，终年积雪，望之皑皑。洱海如镜，月出东山，倒影水中，银波粼粼。上关之花，四时不谢；下关之风，终岁不息。此苍山洱海四景之奇也。"
+                                    <div class="quote-source">——《点苍山记》</div>
+                                </div>
+                                
+                                <div class="insight-box">
+                                    <div class="insight-title"><i class="fas fa-snowflake"></i> "四景"地理分析</div>
+                                    <p>王士性不仅描述景观，更分析其成因：</p>
+                                    <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                                        <li><span class="highlight">苍山雪</span>：高海拔导致终年积雪，记录雪线变化</li>
+                                        <li><span class="highlight">洱海月</span>：湖泊效应与大气条件形成清晰倒影</li>
+                                        <li><span class="highlight">上关花</span>：特殊小气候造就四季花开</li>
+                                        <li><span class="highlight">下关风</span>：地形导致的狭管效应形成常年强风</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 鸡足山 -->
+                        <div class="content-card" id="jizushan-content">
+                            <div class="card-title"><i class="fas fa-mountain"></i> 《游鸡足山记》</div>
+                            <div class="card-content">
+                                <p>记录了佛教圣地鸡足山的自然景观与宗教文化。鸡足山位于云南宾川，是中国佛教名山之一。</p>
+                                <p>王士性考察了寺庙分布、僧侣生活、朝圣活动，同时记录了山体地貌、植被特征，体现了自然景观与宗教文化的交融。</p>
+                                
+                                <div class="feature-grid">
+                                    <div class="feature-card">
+                                        <div class="feature-icon"><i class="fas fa-place-of-worship"></i></div>
+                                        <div class="feature-title">宗教地理</div>
+                                        <div class="feature-desc">记录寺庙选址与地形地貌的关系，分析宗教空间分布规律</div>
+                                    </div>
+                                    <div class="feature-card">
+                                        <div class="feature-icon"><i class="fas fa-hiking"></i></div>
+                                        <div class="feature-title">朝圣路线</div>
+                                        <div class="feature-desc">详细描述香客朝圣路线、途中休息点与宗教活动</div>
+                                    </div>
+                                    <div class="feature-card">
+                                        <div class="feature-icon"><i class="fas fa-tree"></i></div>
+                                        <div class="feature-title">古树名木</div>
+                                        <div class="feature-desc">记录寺庙周围的古树，分析宗教活动对植被保护的影响</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 矿业开采 -->
+                        <div class="content-card" id="mining-content">
+                            <div class="card-title"><i class="fas fa-gem"></i> 矿业开采考察</div>
+                            <div class="card-content">
+                                <p>王士性对云南的矿业开采进行了深入考察和记录，特别是银矿、铜矿的开采与冶炼。</p>
+                                <p>他详细记载了矿场位置、开采技术、冶炼方法、矿工生活以及矿业对当地经济的影响，为研究明代矿业经济提供了第一手资料。</p>
+                                
+                                <div class="literary-excerpt">
+                                    "滇南多银矿，矿工数千，穴地数十丈取矿。矿砂出井，以水淘洗，然后入炉冶炼。一炉之设，费金百两，然得银不过数两，其艰难如此。矿工生活困苦，朝不保夕，然为生计所迫，不得不为。"
+                                    <div class="quote-source">——王士性矿业观察</div>
+                                </div>
+                                
+                                <div class="insight-box">
+                                    <div class="insight-title"><i class="fas fa-chart-line"></i> 经济影响分析</div>
+                                    <p>王士性关注矿业对云南经济的多重影响：</p>
+                                    <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                                        <li>矿业带动相关产业发展（工具制造、运输、粮食供应）</li>
+                                        <li>矿工聚集形成新的居民点与市集</li>
+                                        <li>白银产出对货币流通的影响</li>
+                                        <li>官府对矿业的税收与管理</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 贸易用贝 -->
+                        <div class="content-card" id="trade-content">
+                            <div class="card-title"><i class="fas fa-coins"></i> 贸易用贝现象</div>
+                            <div class="card-content">
+                                <p>王士性记录了云南地区独特的贸易用贝现象。在明代，云南部分地区仍使用贝币（海贝）作为交易媒介。</p>
+                                    <p>他详细考察了贝币的来源、流通方式、兑换比率，以及贝币与铜钱、白银的并行流通情况，为研究明代货币史提供了重要资料。</p>
+                                    
+                                    <div class="literary-excerpt">
+                                        "滇人贸易，多用海贝，谓之'贝子'。一贝曰庄，四庄曰手，四手曰苗，五苗曰索。索者，八十贝也。贝从南海来，商贾贩运至滇，获利数倍。然官府征税，仍用银钱，故贝与银钱并行。"
+                                        <div class="quote-source">——王士性货币观察</div>
+                                    </div>
+                                    
+                                    <div class="insight-box">
+                                        <div class="insight-title"><i class="fas fa-exchange-alt"></i> 货币体系特点</div>
+                                        <p>王士性分析的云南货币体系特征：</p>
+                                        <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                                            <li><span class="highlight">多元并存</span>：贝币、铜钱、白银在不同场景中使用</li>
+                                            <li><span class="highlight">区域差异</span>：城镇多用银钱，偏远地区多用贝币</li>
+                                            <li><span class="highlight">兑换体系</span>：形成稳定的贝币与银钱兑换比率</li>
+                                            <li><span class="highlight">历史延续</span>：贝币使用可追溯至古代，体现文化传承</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div class="feature-grid">
+                                        <div class="feature-card">
+                                            <div class="feature-icon"><i class="fas fa-ship"></i></div>
+                                            <div class="feature-title">贝币来源</div>
+                                            <div class="feature-desc">记录海贝从印度洋、南海经贸易路线运至云南的过程</div>
+                                        </div>
+                                        <div class="feature-card">
+                                            <div class="feature-icon"><i class="fas fa-balance-scale"></i></div>
+                                            <div class="feature-title">价值体系</div>
+                                            <div class="feature-desc">分析贝币价值与稀缺性、运输成本的关系</div>
+                                        </div>
+                                        <div class="feature-card">
+                                            <div class="feature-icon"><i class="fas fa-history"></i></div>
+                                            <div class="feature-title">历史意义</div>
+                                            <div class="feature-desc">指出贝币使用是古代货币制度的活化石</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>本交互地图基于王士性《广志绎》滇粤游内容制作 | 展现明代滇粤地区地理环境、人文景观与社会经济</p>
+        <p>© 2023 明代地理文献数字化项目 | 王士性地理考察与人文观察可视化系统</p>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // 初始化地图 - 以滇粤为中心
+        const map = L.map('map').setView([25.0, 105.0], 6);
+        
+        // 添加地图图层
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 12,
+            minZoom: 5
+        }).addTo(map);
+        
+        // 王士性滇粤行迹主要地点坐标
+        const locations = {
+            // 广东广西地区
+            "桂林": { 
+                lat: 25.27, 
+                lng: 110.29, 
+                type: "自然人文", 
+                color: "#3498db", 
+                description: "《桂海志续》主要考察地，记录喀斯特地貌与少数民族文化",
+                essay: "桂海志续",
+                region: "guangdong"
+            },
+            "七星岩": { 
+                lat: 23.05, 
+                lng: 112.47, 
+                type: "自然景观", 
+                color: "#3498db", 
+                description: "广东肇庆七星岩，王士性详细记录其喀斯特地貌特征",
+                essay: "游七星岩记",
+                region: "guangdong"
+            },
+            "南宁": { 
+                lat: 22.82, 
+                lng: 108.37, 
+                type: "城市", 
+                color: "#3498db", 
+                description: "广西重要城市，王士性记录当地社会经济发展与民族关系",
+                essay: "桂海志续",
+                region: "guangdong"
+            },
+            
+            // 云南地区
+            "昆明": { 
+                lat: 25.04, 
+                lng: 102.72, 
+                type: "城市", 
+                color: "#e67e22", 
+                description: "云南中心，王士性泛舟滇池考察水文气候",
+                essay: "泛舟昆明池历太华诸峰记",
+                region: "yunnan"
+            },
+            "滇池": { 
+                lat: 24.85, 
+                lng: 102.68, 
+                type: "湖泊", 
+                color: "#e67e22", 
+                description: "云南最大湖泊，王士性详细记录其地理特征与气候影响",
+                essay: "泛舟昆明池历太华诸峰记",
+                region: "yunnan"
+            },
+            "点苍山": { 
+                lat: 25.68, 
+                lng: 100.15, 
+                type: "山脉", 
+                color: "#e67e22", 
+                description: "大理点苍山，王士性记录'四景'与地理成因",
+                essay: "点苍山记",
+                region: "yunnan"
+            },
+            "洱海": { 
+                lat: 25.80, 
+                lng: 100.18, 
+                type: "湖泊", 
+                color: "#e67e22", 
+                description: "大理洱海，与点苍山共同构成'苍山洱海'景观",
+                essay: "点苍山记",
+                region: "yunnan"
+            },
+            "鸡足山": { 
+                lat: 25.98, 
+                lng: 100.42, 
+                type: "宗教名山", 
+                color: "#e67e22", 
+                description: "佛教圣地，王士性考察宗教文化与自然景观的交融",
+                essay: "游鸡足山记",
+                region: "yunnan"
+            },
+            "九鼎山": { 
+                lat: 24.35, 
+                lng: 102.55, 
+                type: "山脉", 
+                color: "#e67e22", 
+                description: "云南九鼎山，王士性记录其地质构造与植被垂直分布",
+                essay: "游云南九鼎山记",
+                region: "yunnan"
+            },
+            
+            // 矿业地点
+            "个旧": { 
+                lat: 23.37, 
+                lng: 103.15, 
+                type: "矿业", 
+                color: "#2ecc71", 
+                description: "云南主要锡矿产地，王士性记录矿业开采与经济影响",
+                essay: "矿业考察",
+                region: "yunnan"
+            },
+            "东川": { 
+                lat: 26.08, 
+                lng: 103.18, 
+                type: "矿业", 
+                color: "#2ecc71", 
+                description: "铜矿重要产地，王士性考察采矿与冶炼技术",
+                essay: "矿业考察",
+                region: "yunnan"
+            }
+        };
+        
+        // 行程路线坐标（王士性滇粤行迹路线）
+        const routeCoordinates = [
+            [30.67, 104.07],  // 成都（起点）
+            [28.20, 116.98],  // 江西南部
+            [25.27, 110.29],  // 桂林
+            [23.05, 112.47],  // 七星岩
+            [22.82, 108.37],  // 南宁
+            [24.35, 102.55],  // 九鼎山
+            [25.04, 102.72],  // 昆明
+            [24.85, 102.68],  // 滇池
+            [25.68, 100.15],  // 点苍山
+            [25.80, 100.18],  // 洱海
+            [25.98, 100.42],  // 鸡足山
+            [23.37, 103.15],  // 个旧
+            [26.08, 103.18]   // 东川
+        ];
+        
+        // 绘制路线
+        const routeLine = L.polyline(routeCoordinates, {
+            color: '#1e3c72',
+            weight: 5,
+            opacity: 0.8,
+            dashArray: '15, 10'
+        }).addTo(map);
+        
+        // 添加路线起点标记
+        const startMarker = L.circleMarker([routeCoordinates[0][0], routeCoordinates[0][1]], {
+            color: '#1e3c72',
+            fillColor: '#1e3c72',
+            fillOpacity: 1,
+            radius: 10
+        }).addTo(map);
+        
+        startMarker.bindPopup(`
+            <div style="font-family: 'Microsoft YaHei', sans-serif; max-width: 250px;">
+                <h4 style="margin: 0 0 8px 0; color: #1e3c72;">滇粤游起点</h4>
+                <p><strong>成都</strong></p>
+                <p>王士性完成蜀地考察后，由此开始滇粤之行。</p>
+            </div>
+        `);
+        
+        // 添加地点标记
+        const markers = {};
+        Object.keys(locations).forEach(locationName => {
+            const loc = locations[locationName];
+            const marker = L.circleMarker([loc.lat, loc.lng], {
+                color: loc.color,
+                fillColor: loc.color,
+                fillOpacity: 0.9,
+                radius: 10,
+                weight: 2
+            }).addTo(map);
+            
+            // 添加弹窗信息
+            marker.bindPopup(`
+                <div style="font-family: 'Microsoft YaHei', sans-serif; max-width: 300px;">
+                    <h4 style="margin: 0 0 10px 0; color: ${loc.color};">${locationName}</h4>
+                    <p><strong>类型：</strong> ${loc.type}</p>
+                    <p><strong>所属游记：</strong> ${loc.essay}</p>
+                    <p>${loc.description}</p>
+                </div>
+            `);
+            
+            // 保存标记引用
+            markers[locationName] = marker;
+            
+            // 添加点击事件
+            marker.on('click', function() {
+                // 根据地点类型切换到相应内容
+                const contentId = getContentIdByEssay(loc.essay);
+                if (contentId) {
+                    showContent(contentId);
+                }
+            });
+        });
+        
+        // 侧边栏项目点击事件
+        document.querySelectorAll('.category-item').forEach(item => {
+            item.addEventListener('click', function() {
+                // 移除所有active类
+                document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
+                // 激活当前项目
+                this.classList.add('active');
+                
+                // 显示对应内容
+                const contentId = this.getAttribute('data-content');
+                showContent(contentId);
+            });
+        });
+        
+        // 区域选择器点击事件
+        document.querySelectorAll('.region-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // 移除所有active类
+                document.querySelectorAll('.region-btn').forEach(b => b.classList.remove('active'));
+                // 激活当前按钮
+                this.classList.add('active');
+                
+                const region = this.getAttribute('data-region');
+                filterByRegion(region);
+            });
+        });
+        
+        // 地图控制功能
+        document.getElementById('showGuangdong').addEventListener('click', () => {
+            // 聚焦广东广西地区
+            const guangdongBounds = L.latLngBounds(
+                [20.5, 107.0], // 西南角
+                [26.0, 113.0]  // 东北角
+            );
+            map.fitBounds(guangdongBounds);
+            
+            // 切换到广东区域
+            document.querySelectorAll('.region-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('[data-region="guangdong"]').classList.add('active');
+            filterByRegion('guangdong');
+        });
+        
+        document.getElementById('showYunnan').addEventListener('click', () => {
+            // 聚焦云南地区
+            const yunnanBounds = L.latLngBounds(
+                [21.0, 97.0], // 西南角
+                [29.0, 106.0] // 东北角
+            );
+            map.fitBounds(yunnanBounds);
+            
+            // 切换到云南区域
+            document.querySelectorAll('.region-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('[data-region="yunnan"]').classList.add('active');
+            filterByRegion('yunnan');
+        });
+        
+        document.getElementById('showFullRoute').addEventListener('click', () => {
+            map.fitBounds(routeLine.getBounds());
+            
+            // 切换到全部区域
+            document.querySelectorAll('.region-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('[data-region="all"]').classList.add('active');
+            filterByRegion('all');
+        });
+        
+        // 根据游记名称获取内容ID
+        function getContentIdByEssay(essay) {
+            const essayMap = {
+                "桂海志续": "guihai",
+                "游七星岩记": "qixingyan",
+                "泛舟昆明池历太华诸峰记": "kunmingchi",
+                "游云南九鼎山记": "jiudingshan",
+                "点苍山记": "diancang",
+                "游鸡足山记": "jizushan",
+                "矿业考察": "mining"
+            };
+            
+            return essayMap[essay] ? `${essayMap[essay]}-content` : null;
+        }
+        
+        // 显示指定内容卡片
+        function showContent(contentId) {
+            // 隐藏所有内容卡片
+            document.querySelectorAll('.content-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            // 显示指定内容卡片
+            const contentCard = document.getElementById(contentId);
+            if (contentCard) {
+                contentCard.classList.add('active');
+                // 滚动到顶部
+                contentCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+        
+        // 根据区域过滤侧边栏项目
+        function filterByRegion(region) {
+            document.querySelectorAll('.category-item').forEach(item => {
+                const contentId = item.getAttribute('data-content');
+                let shouldShow = false;
+                
+                if (region === 'all') {
+                    shouldShow = true;
+                } else if (region === 'guangdong') {
+                    // 广东广西相关的内容
+                    const guangdongContents = ['guihai', 'qixingyan'];
+                    shouldShow = guangdongContents.includes(contentId);
+                } else if (region === 'yunnan') {
+                    // 云南相关的内容
+                    const yunnanContents = ['kunmingchi', 'jiudingshan', 'diancang', 'jizushan', 'mining', 'trade'];
+                    shouldShow = yunnanContents.includes(contentId);
+                }
+                
+                if (shouldShow) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            
+            // 重置激活状态
+            const firstVisibleItem = document.querySelector('.category-item[style="display: block;"], .category-item:not([style])');
+            if (firstVisibleItem) {
+                document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
+                firstVisibleItem.classList.add('active');
+                showContent(firstVisibleItem.getAttribute('data-content') + '-content');
+            }
+        }
+        
+        // 初始显示完整路线
+        map.fitBounds(routeLine.getBounds());
+        
+        // 添加比例尺
+        L.control.scale({imperial: false}).addTo(map);
+        
+        // 添加自定义图例
+        const legend = L.control({position: 'bottomright'});
+        legend.onAdd = function(map) {
+            const div = L.DomUtil.create('div', 'info legend');
+            div.style.backgroundColor = 'white';
+            div.style.padding = '12px';
+            div.style.borderRadius = '8px';
+            div.style.boxShadow = '0 4px 15px rgba(0,0,0,0.15)';
+            div.innerHTML = `
+                <h4 style="margin:0 0 10px 0; color: #1e3c72;">图例</h4>
+                <div style="display:flex; align-items:center; margin-bottom:8px;">
+                    <div style="width:12px; height:12px; border-radius:50%; background:#3498db; margin-right:8px;"></div>
+                    <span>广东广西地点</span>
+                </div>
+                <div style="display:flex; align-items:center; margin-bottom:8px;">
+                    <div style="width:12px; height:12px; border-radius:50%; background:#e67e22; margin-right:8px;"></div>
+                    <span>云南地点</span>
+                </div>
+                <div style="display:flex; align-items:center; margin-bottom:8px;">
+                    <div style="width:12px; height:12px; border-radius:50%; background:#2ecc71; margin-right:8px;"></div>
+                    <span>矿业地点</span>
+                </div>
+                <div style="display:flex; align-items:center; margin-top:10px;">
+                    <div style="width:100%; height:3px; background:#1e3c72; opacity:0.8; margin-right:8px; margin-top:3px;"></div>
+                    <span>行迹路线</span>
+                </div>
+            `;
+            return div;
+        };
+        legend.addTo(map);
+        
+        // 初始化：显示第一个内容卡片
+        showContent('guihai-content');
+    </script>
+</body>
+</html>

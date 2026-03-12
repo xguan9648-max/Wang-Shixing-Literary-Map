@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>王士性行程地图 (1547-1583) - 基于CHGIS明代行政区划</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "SimSun", "宋体", serif;
+            background-color: #f5f2e9;
+        }
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+        .info-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: rgba(255, 248, 220, 0.9);
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+            max-width: 320px;
+            border: 1px solid #d4b483;
+        }
+        .timeline {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: rgba(255, 248, 220, 0.9);
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+            max-height: 250px;
+            overflow-y: auto;
+            border: 1px solid #d4b483;
+        }
+        h1 {
+            margin-top: 0;
+            font-size: 1.4em;
+            color: #8B0000;
+            text-align: center;
+            border-bottom: 1px solid #d4b483;
+            padding-bottom: 8px;
+        }
+        h2 {
+            font-size: 1.2em;
+            color: #8B0000;
+            margin-bottom: 5px;
+        }
+        .event-marker {
+            background-color: #1e90ff;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        .birth-marker {
+            background-color: #dc143c;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        .route-marker {
+            background-color: #ff8c00;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        .legend {
+            line-height: 18px;
+            color: #555;
+            font-size: 0.9em;
+        }
+        .legend i {
+            width: 18px;
+            height: 18px;
+            float: left;
+            margin-right: 8px;
+            opacity: 0.9;
+        }
+        .historical-note {
+            font-style: italic;
+            color: #666;
+            font-size: 0.85em;
+            margin-top: 10px;
+            border-top: 1px dashed #d4b483;
+            padding-top: 8px;
+        }
+        .timeline-event {
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed #d4b483;
+        }
+        .timeline-year {
+            font-weight: bold;
+            color: #8B0000;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/3.32.1/minified.js"></script>
+
+    <style class="mobile-patch">
+        /* 移动端适配补丁 */
+        @media (max-width: 768px) {
+            .leaflet-control-container .leaflet-top { top: 10px; }
+            .leaflet-control-container .leaflet-bottom { bottom: 10px; }
+            .info-panel, .legend, .time-control {
+                max-width: 95% !important;
+                font-size: 12px;
+                left: 2.5% !important;
+                right: 2.5% !important;
+            }
+            .info-panel {
+                max-height: 30vh;
+                bottom: 0;
+                top: auto;
+                border-radius: 10px 10px 0 0;
+            }
+            h1 { font-size: 1.2rem !important; }
+            #map { height: 60vh !important; }
+        }
+    </style>
+
+</head>
+<body>
+    <div id="map"></div>
+    <div class="info-panel">
+        <h1>王士性行程地图 (1547-1583)</h1>
+        <div id="location-details">
+            <p>基于哈佛大学CHGIS明代行政区划数据</p>
+            <p>点击地图标记点查看详细信息</p>
+        </div>
+        <div class="historical-note">
+            地图底图：万历十年(1582年)明代行政区划<br>
+            数据来源：哈佛大学中国历史地理信息系统(CHGIS V6)
+        </div>
+    </div>
+    <div class="timeline">
+        <h2>王士性生平时间线</h2>
+        <div class="timeline-event">
+            <span class="timeline-year">1547年</span>: 生于浙江台州府临海县
+        </div>
+        <div class="timeline-event">
+            <span class="timeline-year">1569年</span>: 杭州府游学
+        </div>
+        <div class="timeline-event">
+            <span class="timeline-year">1571年</span>: 游历应天府(南京)
+        </div>
+        <div class="timeline-event">
+            <span class="timeline-year">1574年</span>: 游历金华府，再访南京
+        </div>
+        <div class="timeline-event">
+            <span class="timeline-year">1576年</span>: 考察处州府(缙云、丽水、青田)
+        </div>
+        <div class="timeline-event">
+            <span class="timeline-year">1578年</span>: 作《游武林湖山六记》，进京途经确山
+        </div>
+        <div class="timeline-event">
+            <span class="timeline-year">1579年</span>: 著《横山烈妇祠记》(确山)
+        </div>
+        <div class="timeline-event">
+            <span class="timeline-year">1581年</span>: 著《嵩山记》《游梁记》(登封)
+        </div>
+        <div class="timeline-event">
+            <span class="timeline-year">1583年</span>: 任礼科给事中(北京)
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // 初始化地图，中心点设为杭州
+        var map = L.map('map', {
+            attributionControl: false,
+            zoomControl: false
+        }).setView([34.0, 113.0], 5);
+
+        // 添加哈佛CHGIS明代地图瓦片
+        var chgisMingMap = L.tileLayer('https://map.harvard.edu/tileserver.php?/ming_1582_webmercator/{z}/{x}/{y}.png', {
+            attribution: '明代行政区划地图 © 哈佛大学CHGIS',
+            minZoom: 4,
+            maxZoom: 8,
+            bounds: [[15.0, 70.0], [45.0, 140.0]]
+        }).addTo(map);
+
+        // 备用底图（如果CHGIS瓦片不可用）
+        var backupMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}', {
+            attribution: '自然地理底图',
+            minZoom: 4,
+            maxZoom: 8,
+            opacity: 0.5
+        });
+
+        // 检查CHGIS地图是否加载成功
+        chgisMingMap.on('load', function() {
+            console.log('CHGIS地图加载成功');
+        }).on('tileerror', function() {
+            console.log('CHGIS地图加载失败，使用备用底图');
+            chgisMingMap.remove();
+            backupMap.addTo(map);
+        });
+
+        // 添加缩放控件
+        L.control.zoom({
+            position: 'topright'
+        }).addTo(map);
+
+        // 地点数据（使用明代行政区划名称）
+        var locations = [
+            {
+                id: 1,
+                name: "台州府临海县",
+                modernName: "浙江临海市",
+                event: "1547年 - 王士性出生地",
+                lat: 28.8567,
+                lng: 121.1389,
+                year: 1547,
+                type: "birth",
+                detail: "王士性(1547-1598)，字恒叔，号太初，浙江临海人。明代著名地理学家、旅行家。出生于台州府临海县书香门第，自幼聪颖好学。"
+            },
+            {
+                id: 2,
+                name: "杭州府",
+                modernName: "浙江杭州市",
+                event: "1569年 - 游学杭州\n1578年 - 作《游武林湖山六记》",
+                lat: 30.2741,
+                lng: 120.1551,
+                year: 1569,
+                type: "event",
+                detail: "王士性年轻时曾游学杭州府，后于1578年在此创作《游武林湖山六记》，详细记录了杭州西湖及周边山水的风貌。杭州作为明代东南文化中心，对王士性的学术成长有重要影响。"
+            },
+            {
+                id: 3,
+                name: "应天府(南京)",
+                modernName: "江苏南京市",
+                event: "1571年 - 游历南京\n1574年 - 再次到访",
+                lat: 32.0603,
+                lng: 118.7969,
+                year: 1571,
+                type: "event",
+                detail: "明代陪都应天府(南京)，王士性曾两次游历，考察明代留都的政治文化风貌。南京作为明代南方的政治中心，保留了大量明代初期的建筑和制度。"
+            },
+            {
+                id: 4,
+                name: "金华府",
+                modernName: "浙江金华市",
+                event: "1574年 - 游历金华",
+                lat: 29.0781,
+                lng: 119.6474,
+                year: 1574,
+                type: "event",
+                detail: "金华府是浙江重要府城，王士性在此考察了八婺文化。金华以书院文化著称，是浙东学派的重要发源地。"
+            },
+            {
+                id: 5,
+                name: "处州府缙云县",
+                modernName: "浙江缙云县",
+                event: "1576年 - 游历缙云",
+                lat: 28.6593,
+                lng: 120.0919,
+                year: 1576,
+                type: "event",
+                detail: "缙云县以仙都山闻名，王士性曾到此考察浙南山地地理。缙云是处州府下辖县，地处瓯江流域，自然景观秀丽。"
+            },
+            {
+                id: 6,
+                name: "处州府(丽水)",
+                modernName: "浙江丽水市",
+                event: "1576年 - 游历处州府",
+                lat: 28.4676,
+                lng: 119.9227,
+                year: 1576,
+                type: "event",
+                detail: "处州府是浙南重镇，王士性在此考察瓯江流域地理。明代处州府辖境包括今丽水、青田等地，是浙江西南部的政治经济中心。"
+            },
+            {
+                id: 7,
+                name: "处州府青田县",
+                modernName: "浙江青田县",
+                event: "1576年 - 游历青田",
+                lat: 28.1399,
+                lng: 120.2826,
+                year: 1576,
+                type: "event",
+                detail: "青田县以石雕闻名，王士性在此考察了浙闽交界地区。青田地处瓯江中游，是连接浙江与福建的重要通道。"
+            },
+            {
+                id: 8,
+                name: "京师(北京)",
+                modernName: "北京市",
+                event: "1578年 - 进京\n1583年 - 任礼科给事中",
+                lat: 39.9042,
+                lng: 116.4074,
+                year: 1578,
+                type: "event",
+                detail: "王士性1578年首次进京，1583年出任礼科给事中，参与朝政。明代京师北京是国家的政治中心，王士性在此任职期间积累了丰富的政治经验。"
+            },
+            {
+                id: 9,
+                name: "汝宁府确山县",
+                modernName: "河南确山县",
+                event: "1578年 - 途经确山\n1579年 - 著《横山烈妇祠记》",
+                lat: 32.8016,
+                lng: 114.0265,
+                year: 1578,
+                type: "event",
+                detail: "确山县位于河南南部，属汝宁府管辖。王士性1579年在此创作《横山烈妇祠记》，记录了当地的历史典故和风土人情。"
+            },
+            {
+                id: 10,
+                name: "河南府登封县(嵩山)",
+                modernName: "河南登封市",
+                event: "1581年 - 著《嵩山记》《游梁记》",
+                lat: 34.4840,
+                lng: 113.0366,
+                year: 1581,
+                type: "event",
+                detail: "王士性游历嵩山后创作《嵩山记》，并著《游梁记》记录中原地区见闻。嵩山作为五岳之一，是明代重要的宗教文化圣地。"
+            }
+        ];
+
+        // 行程路线数据
+        var routes = [
+            {from: 1, to: 2, year: 1569, desc: "临海→杭州 游学"},
+            {from: 2, to: 3, year: 1571, desc: "杭州→南京 游历"},
+            {from: 3, to: 4, year: 1574, desc: "南京→金华 考察"},
+            {from: 4, to: 3, year: 1574, desc: "金华→南京 再访"},
+            {from: 3, to: 5, year: 1576, desc: "南京→缙云 考察"},
+            {from: 5, to: 6, year: 1576, desc: "缙云→丽水 考察"},
+            {from: 6, to: 7, year: 1576, desc: "丽水→青田 考察"},
+            {from: 7, to: 2, year: 1578, desc: "青田→杭州 著作"},
+            {from: 2, to: 9, year: 1578, desc: "杭州→确山 北上"},
+            {from: 9, to: 8, year: 1578, desc: "确山→北京 进京"},
+            {from: 8, to: 10, year: 1581, desc: "北京→登封 考察"},
+            {from: 10, to: 8, year: 1583, desc: "登封→北京 任职"}
+        ];
+
+        // 创建标记点
+        var markers = {};
+        locations.forEach(function(loc) {
+            var marker;
+            if (loc.type === "birth") {
+                marker = L.circleMarker([loc.lat, loc.lng], {
+                    className: 'birth-marker',
+                    radius: 8,
+                    fillOpacity: 0.9
+                });
+            } else {
+                marker = L.circleMarker([loc.lat, loc.lng], {
+                    className: 'event-marker',
+                    radius: 6,
+                    fillOpacity: 0.9
+                });
+            }
+            
+            marker.addTo(map)
+                .bindPopup(`<b>${loc.name}</b><br><em>${loc.modernName}</em><hr><p>${loc.event.replace(/\n/g, '<br>')}</p><p>${loc.detail}</p>`)
+                .on('click', function() {
+                    document.getElementById('location-details').innerHTML = 
+                        `<h2>${loc.name}</h2><p><em>今${loc.modernName}</em></p><p>${loc.event.replace(/\n/g, '<br>')}</p><p>${loc.detail}</p>`;
+                });
+            
+            markers[loc.id] = marker;
+        });
+
+        // 绘制行程路线
+        routes.forEach(function(route) {
+            var fromLoc = locations.find(l => l.id === route.from);
+            var toLoc = locations.find(l => l.id === route.to);
+            
+            if (fromLoc && toLoc) {
+                var polyline = L.polyline(
+                    [[fromLoc.lat, fromLoc.lng], [toLoc.lat, toLoc.lng]],
+                    {
+                        color: '#8B0000',
+                        weight: 2,
+                        opacity: 0.7,
+                        dashArray: '5, 5'
+                    }
+                ).addTo(map);
+                
+                // 在路线中点添加年份标记
+                var midLat = (fromLoc.lat + toLoc.lat) / 2;
+                var midLng = (fromLoc.lng + toLoc.lng) / 2;
+                
+                L.circleMarker([midLat, midLng], {
+                    className: 'route-marker',
+                    radius: 5
+                }).addTo(map)
+                .bindPopup(`<b>${route.year}年行程</b><br>${route.desc}`);
+            }
+        });
+
+        // 添加图例
+        var legend = L.control({position: 'bottomright'});
+        legend.onAdd = function(map) {
+            var div = L.DomUtil.create('div', 'info legend');
+            div.innerHTML = '<h3>地图图例</h3>' +
+                '<div><i style="background: #dc143c"></i> 出生地</div>' +
+                '<div><i style="background: #1e90ff"></i> 事件地点</div>' +
+                '<div><i style="background: #ff8c00"></i> 行程路线</div>' +
+                '<hr><small>地图时间范围: 1547-1583年<br>基于万历十年(1582)行政区划</small>';
+            return div;
+        };
+        legend.addTo(map);
+
+        // 初始显示杭州信息
+        var hangzhou = locations.find(l => l.id === 2);
+        if (hangzhou) {
+            document.getElementById('location-details').innerHTML = 
+                `<h2>${hangzhou.name}</h2><p><em>今${hangzhou.modernName}</em></p><p>${hangzhou.event.replace(/\n/g, '<br>')}</p><p>${hangzhou.detail}</p>`;
+        }
+    </script>
+</body>
+</html>

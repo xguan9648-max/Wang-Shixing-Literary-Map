@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>王士性《岳游上》五岳宦游纪行图 - 明代文化景观地图</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f1e8;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(to right, #2c5530, #4a7c59);
+            color: #f5f1e8;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1000;
+        }
+        
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        
+        .header .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 800px;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .map-container {
+            flex: 3;
+            min-width: 300px;
+            height: 600px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid #d4c9b1;
+        }
+        
+        #historical-map {
+            width: 100%;
+            height: 100%;
+            background-color: #e9e1d1;
+        }
+        
+        .info-panel {
+            flex: 2;
+            min-width: 300px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #d4c9b1;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .info-panel h2 {
+            color: #2c5530;
+            border-bottom: 2px solid #d4c9b1;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+        
+        .mountain-info h3 {
+            color: #4a7c59;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 1.3rem;
+        }
+        
+        .mountain-info .date {
+            color: #8b7355;
+            font-style: italic;
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .mountain-info .description {
+            background-color: #f9f5ed;
+            padding: 0.8rem;
+            border-radius: 6px;
+            border-left: 3px solid #8b7355;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+        
+        .quote {
+            font-style: italic;
+            color: #5a4a3a;
+            text-align: center;
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background-color: #f0ebe1;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+        
+        .timeline-container {
+            width: 100%;
+            margin-top: 2rem;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #d4c9b1;
+        }
+        
+        .timeline-container h2 {
+            color: #2c5530;
+            border-bottom: 2px solid #d4c9b1;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .timeline {
+            position: relative;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 1rem 0;
+        }
+        
+        .timeline::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 4px;
+            background-color: #8b7355;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+        
+        .timeline-item {
+            position: relative;
+            display: inline-block;
+            width: 19%;
+            text-align: center;
+            padding: 0.5rem;
+            z-index: 2;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .timeline-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .timeline-item.active {
+            transform: translateY(-5px);
+        }
+        
+        .timeline-item .year {
+            background-color: #2c5530;
+            color: white;
+            width: 70px;
+            height: 70px;
+            line-height: 70px;
+            border-radius: 50%;
+            margin: 0 auto 0.5rem;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .timeline-item.active .year {
+            background-color: #4a7c59;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+        }
+        
+        .timeline-item .mountain-name {
+            font-weight: bold;
+            color: #2c5530;
+            font-size: 1.1rem;
+        }
+        
+        .timeline-item.active .mountain-name {
+            color: #4a7c59;
+        }
+        
+        .timeline-item .location {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.2rem;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .map-controls {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 6px;
+            background-color: #4a7c59;
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn:hover {
+            background-color: #3a6548;
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid #4a7c59;
+            color: #4a7c59;
+        }
+        
+        .btn-outline:hover {
+            background-color: #4a7c59;
+            color: white;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            color: #666;
+            font-size: 0.9rem;
+            border-top: 1px solid #d4c9b1;
+        }
+        
+        .leaflet-popup-content {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            max-width: 300px;
+        }
+        
+        .leaflet-popup-content h3 {
+            color: #2c5530;
+            margin-bottom: 0.5rem;
+        }
+        
+        .leaflet-popup-content p {
+            margin-bottom: 0.5rem;
+        }
+        
+        @media (max-width: 1100px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .map-container, .info-panel {
+                width: 100%;
+            }
+            
+            .timeline-item {
+                width: 18%;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .timeline-item {
+                width: 100%;
+                display: block;
+                margin-bottom: 1.5rem;
+                text-align: left;
+                padding-left: 3rem;
+            }
+            
+            .timeline::after {
+                height: 100%;
+                width: 4px;
+                left: 1.5rem;
+                top: 0;
+                transform: none;
+            }
+            
+            .timeline-item .year {
+                position: absolute;
+                left: 0;
+                top: 50%;
+                transform: translateY(-50%);
+                margin: 0;
+                width: 50px;
+                height: 50px;
+                line-height: 50px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/3.32.1/minified.js"></script>
+
+    <style class="mobile-patch">
+        /* 移动端适配补丁 */
+        @media (max-width: 768px) {
+            .leaflet-control-container .leaflet-top { top: 10px; }
+            .leaflet-control-container .leaflet-bottom { bottom: 10px; }
+            .info-panel, .legend, .time-control {
+                max-width: 95% !important;
+                font-size: 12px;
+                left: 2.5% !important;
+                right: 2.5% !important;
+            }
+            .info-panel {
+                max-height: 30vh;
+                bottom: 0;
+                top: auto;
+                border-radius: 10px 10px 0 0;
+            }
+            h1 { font-size: 1.2rem !important; }
+            #map { height: 60vh !important; }
+        }
+    </style>
+
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>王士性《岳游上》五岳宦游纪行图</h1>
+            <div class="subtitle">
+                明代文化景观地图（1581-1589）· 以宦游历程展现明代士人的地理认知与精神世界
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="controls">
+            <div class="map-controls">
+                <button id="journey-path-btn" class="btn">
+                    <i class="fas fa-route"></i> 显示宦游路线
+                </button>
+                <button id="toggle-base-btn" class="btn btn-outline">
+                    <i class="fas fa-layer-group"></i> 切换底图样式
+                </button>
+                <button id="reset-view-btn" class="btn btn-outline">
+                    <i class="fas fa-expand-arrows-alt"></i> 重置地图视图
+                </button>
+            </div>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #2c5530;"></div>
+                    <span>五岳位置</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #8b7355;"></div>
+                    <span>宦游路线</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #4a7c59;"></div>
+                    <span>关键城市</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="map-container">
+                <div id="historical-map"></div>
+            </div>
+            
+            <div class="info-panel">
+                <h2>王士性五岳游历记</h2>
+                <div class="quote">
+                    "《岳游上》五篇，历十年而遍五岳，宦迹所至，心岳俱往。士性岂独好游？盖以山川证道，以行旅纪年也。"
+                </div>
+                
+                <div id="mountain-details">
+                    <div class="mountain-info" data-mountain="song">
+                        <h3>嵩山 · 中岳</h3>
+                        <div class="date">辛巳六月（1581年）</div>
+                        <div class="description">
+                            王士性初仕河南确山，赴任后不久即游览嵩山。此时正值其宦途起始，心怀壮志，以中岳为始，体现了传统士人"读万卷书，行万里路"的志向。
+                        </div>
+                    </div>
+                    
+                    <div class="mountain-info" data-mountain="heng_north">
+                        <h3>恒山 · 北岳</h3>
+                        <div class="date">乙酉至戊子（1585-1588年）</div>
+                        <div class="description">
+                            王士性为母守丧期间（丁忧），"衔试命西还"途中游览恒山。此时心境与初仕时已大不相同，守制期间的沉思与对自然的感悟交织。
+                        </div>
+                    </div>
+                    
+                    <div class="mountain-info" data-mountain="tai">
+                        <h3>泰山 · 东岳</h3>
+                        <div class="date">戊子（1588年）</div>
+                        <div class="description">
+                            丁忧期满后，王士性北上京师，顺路游览泰山。泰山作为五岳之首，承载着深厚的文化象征意义，此行既是地理上的朝圣，也是精神上的归宗。
+                        </div>
+                    </div>
+                    
+                    <div class="mountain-info" data-mountain="hua">
+                        <h3>华山 · 西岳</h3>
+                        <div class="date">戊子后（1588年）</div>
+                        <div class="description">
+                            王士性"有西川之命"，受命入蜀，遂与友人相约游览华山。华山以险峻著称，象征着仕途的挑战与转折，此时的游历充满了对未知前程的思考。
+                        </div>
+                    </div>
+                    
+                    <div class="mountain-info" data-mountain="heng_south">
+                        <h3>衡山 · 南岳</h3>
+                        <div class="date">己丑端午（1589年）</div>
+                        <div class="description">
+                            王士性奉命改任广西参议，由汉阳入湘，端午时节过洞庭，"与翰卿泛洞庭，溯沅湘而上"游览衡山。此次游历标志其宦途向南延伸，心境更为开阔。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="timeline-container">
+            <h2>宦游时间轴（1581-1589）</h2>
+            <div class="timeline">
+                <div class="timeline-item active" data-year="1581" data-mountain="song">
+                    <div class="year">1581</div>
+                    <div class="mountain-name">嵩山</div>
+                    <div class="location">河南 · 初仕确山</div>
+                </div>
+                
+                <div class="timeline-item" data-year="1585" data-mountain="heng_north">
+                    <div class="year">1585</div>
+                    <div class="mountain-name">恒山</div>
+                    <div class="location">山西 · 丁忧期间</div>
+                </div>
+                
+                <div class="timeline-item" data-year="1588" data-mountain="tai">
+                    <div class="year">1588</div>
+                    <div class="mountain-name">泰山</div>
+                    <div class="location">山东 · 北上京师</div>
+                </div>
+                
+                <div class="timeline-item" data-year="1588b" data-mountain="hua">
+                    <div class="year">1588</div>
+                    <div class="mountain-name">华山</div>
+                    <div class="location">陕西 · 受命入蜀</div>
+                </div>
+                
+                <div class="timeline-item" data-year="1589" data-mountain="heng_south">
+                    <div class="year">1589</div>
+                    <div class="mountain-name">衡山</div>
+                    <div class="location">湖南 · 改任广西</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <div class="container">
+            本文化景观地图基于《岳游上》五篇记载还原王士性十年五岳宦游历程 · 数据来源：历史文献与地理考证
+            <br>
+            设计理念：融合历史地理、文学叙事与数字人文的可视化呈现
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // 初始化地图
+        const map = L.map('historical-map').setView([34.0, 112.0], 5);
+        
+        // 添加底图（使用历史风格地图瓦片）
+        const historicalBasemap = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors, © CARTO',
+            maxZoom: 10,
+            minZoom: 4
+        }).addTo(map);
+        
+        // 备用底图（自然地形风格）
+        const terrainBasemap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenTopoMap contributors',
+            maxZoom: 10,
+            minZoom: 4
+        });
+        
+        // 五岳坐标数据（基于历史地理位置）
+        const mountains = {
+            song: { 
+                name: "嵩山", 
+                coords: [34.48, 112.97], 
+                year: "1581",
+                description: "王士性初仕河南确山，首谒中岳。此时正值宦途起始，心怀壮志。",
+                quote: "仕之初，志在山水。"
+            },
+            heng_north: { 
+                name: "恒山", 
+                coords: [39.67, 113.73], 
+                year: "1585-1588",
+                description: "丁忧期间，王士性'衔试命西还'途中游览北岳。守制期间的沉思与自然感悟交织。",
+                quote: "居忧读礼，山岳同寂。"
+            },
+            tai: { 
+                name: "泰山", 
+                coords: [36.26, 117.10], 
+                year: "1588",
+                description: "丁忧期满后，北上京师途中顺路游览东岳。泰山作为五岳之首，承载着深厚的文化象征意义。",
+                quote: "仰止岱宗，思接千载。"
+            },
+            hua: { 
+                name: "华山", 
+                coords: [34.48, 110.08], 
+                year: "1588",
+                description: "受命入蜀前，与友人相约游览西岳。华山以险峻著称，象征着仕途的挑战与转折。",
+                quote: "命途转徙，险峰明志。"
+            },
+            heng_south: { 
+                name: "衡山", 
+                coords: [27.25, 112.70], 
+                year: "1589",
+                description: "改任广西参议，由汉阳入湘，端午时节与好友'泛洞庭，溯沅湘而上'游览南岳。",
+                quote: "湘漓分派，此心南驰。"
+            }
+        };
+        
+        // 关键城市坐标
+        const cities = {
+            beijing: { name: "京师", coords: [39.90, 116.40] },
+            quehan: { name: "确山", coords: [32.80, 114.02] },
+            hanyang: { name: "汉阳", coords: [30.55, 114.27] },
+            dongting: { name: "洞庭湖", coords: [29.31, 112.95] }
+        };
+        
+        // 宦游路线坐标（简化路线）
+        const journeyPath = [
+            mountains.song.coords,   // 嵩山
+            [35.0, 113.0],          // 中原腹地
+            mountains.heng_north.coords, // 恒山
+            [38.0, 115.0],          // 向北
+            cities.beijing.coords,  // 京师
+            mountains.tai.coords,   // 泰山
+            [36.0, 114.0],          // 返回中原
+            mountains.hua.coords,   // 华山
+            [32.0, 112.0],          // 向南
+            cities.hanyang.coords,  // 汉阳
+            cities.dongting.coords, // 洞庭湖
+            mountains.heng_south.coords  // 衡山
+        ];
+        
+        // 添加五岳标记
+        const mountainMarkers = {};
+        Object.keys(mountains).forEach(key => {
+            const mountain = mountains[key];
+            const marker = L.circleMarker(mountain.coords, {
+                color: '#2c5530',
+                fillColor: '#2c5530',
+                fillOpacity: 0.8,
+                radius: 10,
+                weight: 2
+            }).addTo(map);
+            
+            marker.bindPopup(`
+                <h3>${mountain.name}</h3>
+                <p><strong>时间：</strong>${mountain.year}</p>
+                <p>${mountain.description}</p>
+                <p><em>${mountain.quote}</em></p>
+            `);
+            
+            mountainMarkers[key] = marker;
+            
+            // 添加文字标注
+            L.marker(mountain.coords, {
+                icon: L.divIcon({
+                    className: 'mountain-label',
+                    html: `<div style="font-weight:bold;color:#2c5530;text-shadow:1px 1px 2px white;">${mountain.name}</div>`,
+                    iconSize: [60, 20],
+                    iconAnchor: [30, 0]
+                })
+            }).addTo(map);
+        });
+        
+        // 添加城市标记
+        Object.keys(cities).forEach(key => {
+            const city = cities[key];
+            L.circleMarker(city.coords, {
+                color: '#4a7c59',
+                fillColor: '#4a7c59',
+                fillOpacity: 0.7,
+                radius: 8,
+                weight: 2
+            }).addTo(map).bindPopup(`<strong>${city.name}</strong>`);
+            
+            // 添加城市文字标注
+            L.marker(city.coords, {
+                icon: L.divIcon({
+                    className: 'city-label',
+                    html: `<div style="color:#4a7c59;font-size:12px;text-shadow:1px 1px 2px white;">${city.name}</div>`,
+                    iconSize: [40, 15],
+                    iconAnchor: [20, 0]
+                })
+            }).addTo(map);
+        });
+        
+        // 添加宦游路线
+        let journeyPathLayer = L.polyline(journeyPath, {
+            color: '#8b7355',
+            weight: 4,
+            opacity: 0.7,
+            dashArray: '10, 10',
+            lineCap: 'round'
+        }).addTo(map);
+        
+        // 添加路线箭头
+        journeyPathLayer = L.polylineDecorator(journeyPath, {
+            patterns: [
+                {
+                    offset: '100%',
+                    repeat: 0,
+                    symbol: L.Symbol.arrowHead({
+                        pixelSize: 15,
+                        polygon: false,
+                        pathOptions: {
+                            stroke: true,
+                            color: '#8b7355',
+                            weight: 2
+                        }
+                    })
+                }
+            ]
+        }).addTo(map);
+        
+        // 添加主要河流（简化表示）
+        const yellowRiver = [
+            [36.0, 116.0],
+            [35.0, 115.0],
+            [34.5, 113.5],
+            [34.5, 112.0],
+            [34.0, 110.5]
+        ];
+        
+        const yangtzeRiver = [
+            [31.0, 120.0],
+            [30.5, 117.0],
+            [30.0, 115.0],
+            [29.5, 113.0]
+        ];
+        
+        L.polyline(yellowRiver, {
+            color: '#4a90e2',
+            weight: 3,
+            opacity: 0.5
+        }).addTo(map).bindPopup('黄河');
+        
+        L.polyline(yangtzeRiver, {
+            color: '#4a90e2',
+            weight: 3,
+            opacity: 0.5
+        }).addTo(map).bindPopup('长江');
+        
+        // 时间轴交互
+        document.querySelectorAll('.timeline-item').forEach(item => {
+            item.addEventListener('click', function() {
+                // 更新活跃状态
+                document.querySelectorAll('.timeline-item').forEach(i => {
+                    i.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // 获取对应的山地
+                const mountainKey = this.getAttribute('data-mountain');
+                const mountain = mountains[mountainKey];
+                
+                // 移动地图视图到该山地
+                map.setView(mountain.coords, 7);
+                
+                // 打开该山地的弹出信息
+                mountainMarkers[mountainKey].openPopup();
+                
+                // 更新右侧信息面板
+                document.querySelectorAll('.mountain-info').forEach(info => {
+                    info.style.display = 'none';
+                });
+                document.querySelector(`.mountain-info[data-mountain="${mountainKey}"]`).style.display = 'block';
+            });
+        });
+        
+        // 按钮交互
+        document.getElementById('journey-path-btn').addEventListener('click', function() {
+            if (map.hasLayer(journeyPathLayer)) {
+                map.removeLayer(journeyPathLayer);
+                this.innerHTML = '<i class="fas fa-route"></i> 显示宦游路线';
+            } else {
+                journeyPathLayer.addTo(map);
+                this.innerHTML = '<i class="fas fa-route"></i> 隐藏宦游路线';
+            }
+        });
+        
+        let currentBasemap = 'historical';
+        document.getElementById('toggle-base-btn').addEventListener('click', function() {
+            if (currentBasemap === 'historical') {
+                map.removeLayer(historicalBasemap);
+                terrainBasemap.addTo(map);
+                currentBasemap = 'terrain';
+                this.innerHTML = '<i class="fas fa-layer-group"></i> 切换为历史底图';
+            } else {
+                map.removeLayer(terrainBasemap);
+                historicalBasemap.addTo(map);
+                currentBasemap = 'historical';
+                this.innerHTML = '<i class="fas fa-layer-group"></i> 切换为地形底图';
+            }
+        });
+        
+        document.getElementById('reset-view-btn').addEventListener('click', function() {
+            map.setView([34.0, 112.0], 5);
+        });
+        
+        // 右侧信息面板点击交互
+        document.querySelectorAll('.mountain-info').forEach(info => {
+            info.addEventListener('click', function() {
+                const mountainKey = this.getAttribute('data-mountain');
+                const mountain = mountains[mountainKey];
+                
+                // 移动地图视图到该山地
+                map.setView(mountain.coords, 7);
+                
+                // 打开该山地的弹出信息
+                mountainMarkers[mountainKey].openPopup();
+                
+                // 更新时间轴活跃状态
+                document.querySelectorAll('.timeline-item').forEach(i => {
+                    i.classList.remove('active');
+                    if (i.getAttribute('data-mountain') === mountainKey) {
+                        i.classList.add('active');
+                    }
+                });
+            });
+        });
+        
+        // 初始化显示嵩山信息
+        document.querySelectorAll('.mountain-info').forEach(info => {
+            if (info.getAttribute('data-mountain') !== 'song') {
+                info.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

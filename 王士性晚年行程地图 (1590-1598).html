@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>王士性晚年行程地图 (1590-1598)</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft YaHei", sans-serif;
+            background-color: #f5f2e9;
+        }
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+        .info-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            max-width: 300px;
+        }
+        .location-label {
+            position: absolute;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 12px;
+            white-space: nowrap;
+            pointer-events: none;
+            border: 1px solid #ddd;
+        }
+        .event-marker {
+            background-color: #3388ff;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        .birth-marker {
+            background-color: #ff3333;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        .death-marker {
+            background-color: #555;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        .route-marker {
+            background-color: #ff8c00;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        .legend {
+            line-height: 18px;
+            color: #555;
+            font-size: 12px;
+        }
+        h1 {
+            margin-top: 0;
+            font-size: 16px;
+            color: #333;
+            text-align: center;
+        }
+        .year-filter {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/3.32.1/minified.js"></script>
+
+    <style class="mobile-patch">
+        /* 移动端适配补丁 */
+        @media (max-width: 768px) {
+            .leaflet-control-container .leaflet-top { top: 10px; }
+            .leaflet-control-container .leaflet-bottom { bottom: 10px; }
+            .info-panel, .legend, .time-control {
+                max-width: 95% !important;
+                font-size: 12px;
+                left: 2.5% !important;
+                right: 2.5% !important;
+            }
+            .info-panel {
+                max-height: 30vh;
+                bottom: 0;
+                top: auto;
+                border-radius: 10px 10px 0 0;
+            }
+            h1 { font-size: 1.2rem !important; }
+            #map { height: 60vh !important; }
+        }
+    </style>
+
+</head>
+<body>
+    <div id="map"></div>
+    <div class="info-panel">
+        <h1>王士性晚年行程地图 (1590-1598)</h1>
+        <div class="legend">
+            <div><i style="background: #ff3333; width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:5px;"></i> 出生地</div>
+            <div><i style="background: #3388ff; width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px;"></i> 事件地点</div>
+            <div><i style="background: #555; width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:5px;"></i> 逝世地</div>
+            <div><i style="background: #ff8c00; width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px;"></i> 行程路线</div>
+        </div>
+    </div>
+    <div class="year-filter">
+        <h3>年份筛选</h3>
+        <label><input type="checkbox" class="year-checkbox" value="1590" checked> 1590年</label><br>
+        <label><input type="checkbox" class="year-checkbox" value="1591" checked> 1591年</label><br>
+        <label><input type="checkbox" class="year-checkbox" value="1592" checked> 1592年</label><br>
+        <label><input type="checkbox" class="year-checkbox" value="1593" checked> 1593年</label><br>
+        <label><input type="checkbox" class="year-checkbox" value="1594" checked> 1594年</label><br>
+        <label><input type="checkbox" class="year-checkbox" value="1595" checked> 1595年</label><br>
+        <label><input type="checkbox" class="year-checkbox" value="1596" checked> 1596年</label><br>
+        <label><input type="checkbox" class="year-checkbox" value="1597" checked> 1597年</label><br>
+        <label><input type="checkbox" class="year-checkbox" value="1598" checked> 1598年</label>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // 初始化地图，中心点设为江南地区
+        var map = L.map('map').setView([30.0, 110.0], 5);
+
+        // 使用标准地图作为底图
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            minZoom: 4,
+            maxZoom: 8
+        }).addTo(map);
+
+        // 地点数据
+        var locations = [
+            {
+                id: 0,
+                name: "临海县",
+                event: "1590年返乡",
+                lat: 28.8567,
+                lng: 121.1389,
+                year: 1590,
+                type: "event"
+            },
+            {
+                id: 1,
+                name: "昆明府",
+                event: "1591年，作《泛舟昆明池历太华诸峰记》",
+                lat: 25.0435,
+                lng: 102.7092,
+                year: 1591,
+                type: "event"
+            },
+            {
+                id: 2,
+                name: "九鼎山",
+                event: "1591年考察",
+                lat: 25.0329,
+                lng: 101.5465,
+                year: 1591,
+                type: "event"
+            },
+            {
+                id: 3,
+                name: "点苍山",
+                event: "1591年考察",
+                lat: 25.6856,
+                lng: 100.1325,
+                year: 1591,
+                type: "event"
+            },
+            {
+                id: 4,
+                name: "大理府(鸡足山)",
+                event: "1591年，作《游云南九鼎山记》、《点苍山记》、《游鸡足山记》",
+                lat: 25.9422,
+                lng: 100.4024,
+                year: 1591,
+                type: "event"
+            },
+            {
+                id: 5,
+                name: "临海县",
+                event: "1592年居乡",
+                lat: 28.8567,
+                lng: 121.1389,
+                year: 1592,
+                type: "event"
+            },
+            {
+                id: 6,
+                name: "开封府",
+                event: "1593年，改任河南提学，升山东布政司督粮左参政",
+                lat: 34.7971,
+                lng: 114.3072,
+                year: 1593,
+                type: "event"
+            },
+            {
+                id: 7,
+                name: "济南府",
+                event: "1593年任职山东",
+                lat: 36.6655,
+                lng: 117.0204,
+                year: 1593,
+                type: "event"
+            },
+            {
+                id: 8,
+                name: "临海县",
+                event: "1594年居乡",
+                lat: 28.8567,
+                lng: 121.1389,
+                year: 1594,
+                type: "event"
+            },
+            {
+                id: 9,
+                name: "顺天府(北京)",
+                event: "1595年，被召回京都，作《天台改门修学记》",
+                lat: 39.9042,
+                lng: 116.4074,
+                year: 1595,
+                type: "event"
+            },
+            {
+                id: 10,
+                name: "应天府(南京)",
+                event: "1596年，任南京鸿胪寺卿",
+                lat: 32.0603,
+                lng: 118.7969,
+                year: 1596,
+                type: "event"
+            },
+            {
+                id: 11,
+                name: "临海县",
+                event: "1597年，刻《广志绎》",
+                lat: 28.8567,
+                lng: 121.1389,
+                year: 1597,
+                type: "event"
+            },
+            {
+                id: 12,
+                name: "镇江府",
+                event: "1598年，赴南京途中病逝",
+                lat: 32.1879,
+                lng: 119.4258,
+                year: 1598,
+                type: "death"
+            }
+        ];
+
+        // 行程路线数据
+        var routes = [
+            {from: 0, to: 1, year: 1591, desc: "临海→昆明 赴云南"},
+            {from: 1, to: 2, year: 1591, desc: "昆明→九鼎山 考察"},
+            {from: 2, to: 3, year: 1591, desc: "九鼎山→点苍山 考察"},
+            {from: 3, to: 4, year: 1591, desc: "点苍山→鸡足山 考察"},
+            {from: 4, to: 5, year: 1592, desc: "鸡足山→临海 返乡"},
+            {from: 5, to: 6, year: 1593, desc: "临海→开封 赴任"},
+            {from: 6, to: 7, year: 1593, desc: "开封→济南 调任"},
+            {from: 7, to: 8, year: 1594, desc: "济南→临海 返乡"},
+            {from: 8, to: 9, year: 1595, desc: "临海→北京 召回"},
+            {from: 9, to: 10, year: 1596, desc: "北京→南京 赴任"},
+            {from: 10, to: 11, year: 1597, desc: "南京→临海 返乡"},
+            {from: 11, to: 12, year: 1598, desc: "临海→镇江 赴任途中"}
+        ];
+
+        // 存储所有标记和路线
+        var allMarkers = [];
+        var allRoutes = [];
+        var allLabels = [];
+
+        // 添加标记点和标签
+        function addMarkersAndRoutes() {
+            // 清除现有标记和路线
+            allMarkers.forEach(marker => map.removeLayer(marker));
+            allRoutes.forEach(route => map.removeLayer(route));
+            allLabels.forEach(label => map.removeLayer(label));
+            
+            allMarkers = [];
+            allRoutes = [];
+            allLabels = [];
+            
+            // 获取选中的年份
+            var selectedYears = [];
+            document.querySelectorAll('.year-checkbox:checked').forEach(function(checkbox) {
+                selectedYears.push(parseInt(checkbox.value));
+            });
+            
+            // 添加标记点
+            locations.forEach(function(loc) {
+                if (selectedYears.includes(loc.year)) {
+                    var marker;
+                    if (loc.type === "death") {
+                        marker = L.circleMarker([loc.lat, loc.lng], {
+                            className: 'death-marker',
+                            radius: 8
+                        });
+                    } else {
+                        marker = L.circleMarker([loc.lat, loc.lng], {
+                            className: 'event-marker',
+                            radius: 6
+                        });
+                    }
+                    
+                    marker.addTo(map);
+                    allMarkers.push(marker);
+                    
+                    // 创建并添加文本标签
+                    var labelText = `<strong>${loc.name.split('(')[0]}</strong><br>${loc.year}年`;
+                    var firstEventLine = loc.event.split('\n')[0];
+                    if (firstEventLine.length > 15) {
+                        labelText += `<br>${firstEventLine.substring(0, 15)}...`;
+                    } else {
+                        labelText += `<br>${firstEventLine}`;
+                    }
+                    
+                    var label = L.divIcon({
+                        className: 'location-label',
+                        html: labelText,
+                        iconSize: [120, 50]
+                    });
+                    
+                    var labelMarker = L.marker([loc.lat, loc.lng], {
+                        icon: label,
+                        zIndexOffset: 1000
+                    }).addTo(map);
+                    
+                    allLabels.push(labelMarker);
+                    
+                    // 添加完整信息的弹窗
+                    marker.bindPopup(`<b>${loc.name}</b><br>${loc.year}年<br>${loc.event.replace(/\n/g, '<br>')}`);
+                }
+            });
+            
+            // 绘制行程路线
+            routes.forEach(function(route) {
+                if (selectedYears.includes(route.year)) {
+                    var fromLoc = locations[route.from];
+                    var toLoc = locations[route.to];
+                    
+                    if (fromLoc && toLoc && selectedYears.includes(fromLoc.year) && selectedYears.includes(toLoc.year)) {
+                        var polyline = L.polyline(
+                            [[fromLoc.lat, fromLoc.lng], [toLoc.lat, toLoc.lng]],
+                            {
+                                color: '#ff8c00',
+                                weight: 2,
+                                opacity: 0.7,
+                                dashArray: '5, 5'
+                            }
+                        ).addTo(map);
+                        
+                        allRoutes.push(polyline);
+                        
+                        // 在路线中点添加年份标记
+                        var midLat = (fromLoc.lat + toLoc.lat) / 2;
+                        var midLng = (fromLoc.lng + toLoc.lng) / 2;
+                        
+                        var routeMarker = L.circleMarker([midLat, midLng], {
+                            className: 'route-marker',
+                            radius: 5
+                        }).addTo(map)
+                        .bindPopup(`<b>${route.year}年行程</b><br>${route.desc}`);
+                        
+                        allMarkers.push(routeMarker);
+                    }
+                }
+            });
+        }
+
+        // 初始添加标记和路线
+        addMarkersAndRoutes();
+
+        // 年份筛选事件
+        document.querySelectorAll('.year-checkbox').forEach(function(checkbox) {
+            checkbox.addEventListener('change', addMarkersAndRoutes);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>明代王士性行迹图 (1547-1598)</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.timedimension@1.1.1/dist/leaflet.timedimension.control.min.css" />
+    <style>
+        body { 
+            font-family: "SimSun", "宋体", serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f5e9;
+            color: #333;
+        }
+        #container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #fffdf6;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border: 1px solid #d9c7a7;
+        }
+        h1 {
+            text-align: center;
+            color: #8b0000;
+            border-bottom: 2px solid #d9c7a7;
+            padding-bottom: 10px;
+            font-size: 26px;
+            margin-bottom: 5px;
+        }
+        #map { 
+            height: 700px; 
+            border: 1px solid #d9c7a7;
+            background: #f9f5e9;
+        }
+        .info-panel { 
+            background: #fffdf6;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            border: 1px solid #d9c7a7;
+        }
+        .time-control { 
+            padding: 10px;
+            background: #fffdf6;
+            border-radius: 5px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+            border: 1px solid #d9c7a7;
+        }
+        .year-slider { 
+            width: 100%;
+            margin: 10px 0;
+        }
+        #year-display { 
+            font-weight: bold;
+            text-align: center;
+            font-size: 1.2em;
+            margin: 10px 0;
+            color: #8b0000;
+        }
+        .event-popup { 
+            max-width: 300px;
+            font-family: "SimSun", "宋体", serif;
+        }
+        .event-popup b { 
+            color: #8b0000;
+        }
+        .legend { 
+            line-height: 1.5;
+            background: #fffdf6;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+            border: 1px solid #d9c7a7;
+        }
+        .legend i { 
+            width: 18px;
+            height: 18px;
+            float: left;
+            margin-right: 8px;
+            opacity: 0.8;
+            border-radius: 50%;
+            border: 1px solid #fff;
+        }
+        .province-label {
+            color: #000;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px white;
+            pointer-events: none;
+            font-family: "SimSun", "宋体", serif;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/3.32.1/minified.js"></script>
+
+    <style class="mobile-patch">
+        /* 移动端适配补丁 */
+        @media (max-width: 768px) {
+            .leaflet-control-container .leaflet-top { top: 10px; }
+            .leaflet-control-container .leaflet-bottom { bottom: 10px; }
+            .info-panel, .legend, .time-control {
+                max-width: 95% !important;
+                font-size: 12px;
+                left: 2.5% !important;
+                right: 2.5% !important;
+            }
+            .info-panel {
+                max-height: 30vh;
+                bottom: 0;
+                top: auto;
+                border-radius: 10px 10px 0 0;
+            }
+            h1 { font-size: 1.2rem !important; }
+            #map { height: 60vh !important; }
+        }
+    </style>
+
+</head>
+<body>
+    <div id="container">
+        <h1>明代王士性行迹图</h1>
+        <div class="info-panel">
+            <p>本地图展示明代地理学家王士性从1547年至1598年的行迹路线。使用下方滑块可查看不同年份的行程，点击标记查看详细信息。</p>
+            <div id="year-display">年份：1547年</div>
+            <input type="range" id="year-slider" class="year-slider" min="1547" max="1598" value="1547" step="1">
+        </div>
+        <div id="map"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/iso8601-js-period@0.2.1/iso8601.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.timedimension@1.1.1/dist/leaflet.timedimension.min.js"></script>
+    <script>
+        // 1. 初始化地图（聚焦中国）
+        const map = L.map('map').setView([35, 110], 5);
+        
+        // 使用浅色底图（确保黑色疆域线清晰）
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
+            maxZoom: 7,
+            minZoom: 4,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+        // 添加明代省名标注
+        const provinces = {
+            "北直隶": [40, 116.5],
+            "南直隶": [32, 118],
+            "山东": [36.5, 118],
+            "山西": [37.5, 112.5],
+            "河南": [34.5, 113.5],
+            "陕西": [34.5, 108.5],
+            "浙江": [29.5, 120.5],
+            "江西": [27.5, 116],
+            "湖广": [30.5, 112.5],
+            "四川": [30.5, 103.5],
+            "福建": [26, 118],
+            "广东": [23.5, 113.5],
+            "广西": [24.5, 109.5],
+            "云南": [25, 102.5],
+            "贵州": [26.5, 106.5]
+        };
+        
+        Object.entries(provinces).forEach(([name, coords]) => {
+            L.marker(coords, {
+                icon: L.divIcon({
+                    className: 'province-label',
+                    html: `<div>${name}</div>`,
+                    iconSize: [60, 20]
+                }),
+                zIndexOffset: -1000
+            }).addTo(map);
+        });
+
+        // 2. 完整的王士性行迹数据（仅使用公元纪年）
+        const travelData = [
+            {year: 1547, location: "临海", administrative: "临海县", lat: 28.8567, lng: 121.1389, event: "出生"},
+            {year: 1569, location: "杭州", administrative: "杭州府", lat: 30.2741, lng: 120.1551, event: "游学"},
+            {year: 1571, location: "南京", administrative: "南京府", lat: 32.0603, lng: 118.7969, event: ""},
+            {year: 1574, location: "金华", administrative: "金华府", lat: 29.0781, lng: 119.6474, event: ""},
+            {year: 1574, location: "南京", administrative: "南京府", lat: 32.0603, lng: 118.7969, event: ""},
+            {year: 1576, location: "缙云", administrative: "缙云县", lat: 28.6593, lng: 120.0919, event: ""},
+            {year: 1576, location: "丽水", administrative: "处州府", lat: 28.4676, lng: 119.9227, event: ""},
+            {year: 1576, location: "青田", administrative: "括州府/青田县", lat: 28.1399, lng: 120.2826, event: ""},
+            {year: 1578, location: "杭州", administrative: "杭州府", lat: 30.2741, lng: 120.1551, event: "作《游武林湖山六记》"},
+            {year: 1578, location: "京都", administrative: "应天府/北京", lat: 39.9042, lng: 116.4074, event: ""},
+            {year: 1578, location: "杭州临安", administrative: "杭州府", lat: 30.2741, lng: 120.1551, event: ""},
+            {year: 1578, location: "河南确山县", administrative: "确山县/驻马店", lat: 32.8016, lng: 114.0265, event: ""},
+            {year: 1579, location: "河南确山", administrative: "确山县/驻马店", lat: 32.8016, lng: 114.0265, event: "作《横山烈妇祠记》"},
+            {year: 1581, location: "河南嵩山", administrative: "登封市", lat: 34.4840, lng: 113.0366, event: "作《嵩山记》《游梁记》"},
+            {year: 1583, location: "京城", administrative: "应天府/北京", lat: 39.9042, lng: 116.4074, event: "任礼科给事中"},
+            {year: 1584, location: "京城", administrative: "应天府/北京", lat: 39.9042, lng: 116.4074, event: ""},
+            {year: 1585, location: "经安徽滁州", administrative: "中都", lat: 32.3012, lng: 118.3171, event: ""},
+            {year: 1585, location: "临海", administrative: "临海县", lat: 28.8567, lng: 121.1389, event: ""},
+            {year: 1586, location: "温州", administrative: "温州府", lat: 27.9943, lng: 120.6994, event: ""},
+            {year: 1586, location: "苍南", administrative: "金乡卫", lat: 27.5183, lng: 120.4256, event: ""},
+            {year: 1586, location: "乐清", administrative: "乐清县", lat: 28.1129, lng: 120.9866, event: ""},
+            {year: 1586, location: "临海", administrative: "临海县", lat: 28.8567, lng: 121.1389, event: ""},
+            {year: 1586, location: "庐山", administrative: "南康府", lat: 29.4486, lng: 115.9928, event: ""},
+            {year: 1586, location: "武夷山", administrative: "延平府", lat: 27.7566, lng: 118.0354, event: ""},
+            {year: 1586, location: "四明山", administrative: "明州府", lat: 29.8032, lng: 121.0928, event: ""},
+            {year: 1586, location: "雁荡山", administrative: "乐清县", lat: 28.3658, lng: 121.0589, event: ""},
+            {year: 1586, location: "雪窦山（绍兴宁波）", administrative: "明州府", lat: 29.6994, lng: 121.2276, event: ""},
+            {year: 1586, location: "东钱湖", administrative: "明州府", lat: 29.7894, lng: 121.6489, event: ""},
+            {year: 1586, location: "普陀", administrative: "明州府", lat: 29.9856, lng: 122.3869, event: ""},
+            {year: 1586, location: "天台山", administrative: "台州府", lat: 29.1714, lng: 121.1053, event: ""},
+            {year: 1587, location: "杭州", administrative: "杭州府", lat: 30.2500, lng: 120.1615, event: "作《吴游纪行》、《留都述游》、《白岳游记》"},
+            {year: 1587, location: "嘉兴", administrative: "嘉兴府", lat: 30.7539, lng: 120.7585, event: ""},
+            {year: 1587, location: "苏州", administrative: "苏州府", lat: 31.2989, lng: 120.5853, event: ""},
+            {year: 1587, location: "镇江", administrative: "镇江府", lat: 32.1879, lng: 119.4258, event: ""},
+            {year: 1587, location: "南京", administrative: "南京府", lat: 32.0415, lng: 118.7674, event: ""},
+            {year: 1587, location: "九华、白岳", administrative: "镇江府", lat: 30.4820, lng: 117.8091, event: ""},
+            {year: 1588, location: "孔林", administrative: "济南府", lat: 35.5928, lng: 116.9911, event: "作《谒阙里记》"},
+            {year: 1588, location: "茶城白云洞", administrative: "恭城瑶族自治县", lat: 24.8326, lng: 110.8285, event: "作《游茶城白云洞记》"},
+            {year: 1588, location: "泰山", administrative: "泰安州", lat: 36.2556, lng: 117.1000, event: "作《岱游记》"},
+            {year: 1588, location: "京城", administrative: "应天府/北京", lat: 39.9042, lng: 116.4074, event: "任礼科给事中"},
+            {year: 1588, location: "西山", administrative: "", lat: 39.9395, lng: 116.1866, event: "作《西山游记》"},
+            {year: 1588, location: "河南", administrative: "河南府", lat: 34.6197, lng: 112.4545, event: ""},
+            {year: 1588, location: "河北", administrative: "北直隶", lat: 38.8731, lng: 115.4845, event: ""},
+            {year: 1588, location: "陕西", administrative: "西安府", lat: 34.2636, lng: 108.9500, event: ""},
+            {year: 1588, location: "四川", administrative: "", lat: 30.6634, lng: 104.0629, event: "入四川作《西征历》、《华游记》"},
+            {year: 1588, location: "成都", administrative: "成都府", lat: 30.5728, lng: 104.0668, event: "游峨眉山《峨眉山游记》"},
+            {year: 1588, location: "江陵", administrative: "荆州府", lat: 30.3503, lng: 112.1899, event: "作《入蜀记》三篇"},
+            {year: 1588, location: "襄阳", administrative: "襄阳郡", lat: 32.0107, lng: 112.1224, event: "游武当山《太和山游记》"},
+            {year: 1588, location: "恒山", administrative: "浑源县/大同府", lat: 39.6746, lng: 113.7321, event: "作《恒游记》"},
+            {year: 1589, location: "四川", administrative: "成都府", lat: 30.6634, lng: 104.0629, event: "由四川入两广"},
+            {year: 1589, location: "江西", administrative: "南昌府", lat: 28.6829, lng: 115.8582, event: "经江西，作《庐山游记》"},
+            {year: 1589, location: "洞庭", administrative: "岳州府", lat: 29.3571, lng: 113.1294, event: "经洞庭，作《楚江识行》、《衡游记》"},
+            {year: 1589, location: "桂林", administrative: "桂林府", lat: 25.2816, lng: 110.2865, event: "作《桂海志续》、《游七星岩记》编入川所作及有关川人之诗文为《入蜀稿》"},
+            {year: 1589, location: "广东", administrative: "广州府", lat: 23.1291, lng: 113.2644, event: "入广东（太和山、庐山、楚江诸记、海志、七星岩、独秀山、訾家洲诸记）"},
+            {year: 1589, location: "广西（建怀远、荔波二县城）", administrative: "桂林府", lat: 25.7831, lng: 109.5921, event: ""},
+            {year: 1590, location: "临海", administrative: "临海县", lat: 28.8567, lng: 121.1389, event: "返乡"},
+            {year: 1591, location: "昆明", administrative: "昆明府", lat: 25.0435, lng: 102.7092, event: "作《泛舟昆明池历太华诸峰记》"},
+            {year: 1591, location: "九鼎山", administrative: "", lat: 25.0329, lng: 101.5465, event: "作《游云南九鼎山记》、《点苍山记》、《游鸡足山记》、《五岳游草》"},
+            {year: 1591, location: "点苍山", administrative: "", lat: 25.6856, lng: 100.1325, event: ""},
+            {year: 1591, location: "鸡足山", administrative: "大理府", lat: 25.9422, lng: 100.4024, event: ""},
+            {year: 1592, location: "临海", administrative: "临海县", lat: 28.8567, lng: 121.1389, event: ""},
+            {year: 1593, location: "河南", administrative: "开封府", lat: 36.6655, lng: 117.0204, event: "改任河南提学，升山东布政司督粮左参政。改所居清溪小隐为白鸥庄，作《白鸥庄记》。又作《仙居重修学记》"},
+            {year: 1593, location: "山东", administrative: "济南府", lat: 34.7971, lng: 114.3072, event: ""},
+            {year: 1594, location: "临海", administrative: "", lat: 28.8567, lng: 121.1389, event: ""},
+            {year: 1595, location: "京都", administrative: "顺天府", lat: 39.9042, lng: 116.4074, event: "被召回京都，作《天台改门修学记》"},
+            {year: 1596, location: "南京鸿胪寺卿", administrative: "应天府", lat: 32.0603, lng: 118.7969, event: ""},
+            {year: 1597, location: "临海", administrative: "", lat: 28.8567, lng: 121.1389, event: "刻《广志绎》"},
+            {year: 1598, location: "南京未到，病故镇江", administrative: "", lat: 32.1879, lng: 119.4258, event: "病逝"}
+        ];
+
+        // 3. 创建标记和路径
+        const markers = [];
+        const lineCoords = [];
+        
+        // 添加图例
+        const legend = L.control({position: 'bottomright'});
+        legend.onAdd = function(map) {
+            const div = L.DomUtil.create('div', 'legend');
+            div.innerHTML = `
+                <div><i style="background:#8b0000"></i> 重要事件</div>
+                <div><i style="background:#5a3921"></i> 途经地点</div>
+                <div><i style="background:#27ae60"></i> 出生/逝世</div>
+                <div><span style="color:#8b0000">━➤</span> 行迹路线</div>
+                <div><span style="color:#000">━━</span> 明代省界</div>
+            `;
+            return div;
+        };
+        legend.addTo(map);
+
+        travelData.forEach(point => {
+            lineCoords.push([point.lat, point.lng]);
+            
+            // 根据事件类型设置不同颜色
+            let color = "#5a3921"; // 默认棕色
+            if (point.event.includes("出生") || point.event.includes("病逝")) {
+                color = "#27ae60"; // 绿色表示出生/逝世
+            } else if (point.event && point.event.trim() !== "") {
+                color = "#8b0000"; // 暗红色表示重要事件
+            }
+            
+            const marker = L.circleMarker([point.lat, point.lng], {
+                radius: 6,
+                fillColor: color,
+                color: "#fff",
+                weight: 1,
+                opacity: 1,
+                fillOpacity: 0.8
+            }).bindPopup(`
+                <div class="event-popup">
+                    <b>${point.location}</b><br>
+                    明代所属：${point.administrative || '无记录'}<br>
+                    年份：${point.year}年<br>
+                    ${point.event ? `<hr style="margin:5px 0"><i>${point.event}</i>` : '无事件记录'}
+                </div>
+            `);
+            markers.push(marker);
+        });
+
+        // 4. 时间轴控制
+        const yearSlider = document.getElementById('year-slider');
+        const yearDisplay = document.getElementById('year-display');
+        
+        // 显示当前年份的标记
+        function updateMarkers(year) {
+            markers.forEach(marker => {
+                const pointYear = travelData[markers.indexOf(marker)].year;
+                if (pointYear <= year) {
+                    if (!map.hasLayer(marker)) {
+                        marker.addTo(map);
+                    }
+                } else {
+                    if (map.hasLayer(marker)) {
+                        map.removeLayer(marker);
+                    }
+                }
+            });
+            
+            // 更新路径（仅显示到当前年份的路径）
+            const visibleCoords = lineCoords.slice(0, travelData.findIndex(p => p.year > year) + 1);
+            if (window.pathLayer) {
+                map.removeLayer(window.pathLayer);
+            }
+            window.pathLayer = L.polyline(visibleCoords, {
+                color: '#8b0000',
+                weight: 3,
+                opacity: 0.7
+            }).addTo(map);
+        }
+
+        // 初始化显示
+        updateMarkers(1547);
+        
+        // 滑块事件
+        yearSlider.addEventListener('input', function() {
+            const year = parseInt(this.value);
+            yearDisplay.textContent = `年份：${year}年`;
+            updateMarkers(year);
+        });
+
+        // 添加缩放控制
+        L.control.zoom({ position: 'topright' }).addTo(map);
+    </script>
+</body>
+</html>

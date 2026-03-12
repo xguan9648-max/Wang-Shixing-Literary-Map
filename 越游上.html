@@ -1,0 +1,1692 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>王士性《越游上》卷纪行图 - 越地文化景观地图</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #eef5ea 0%, #e0ead8 100%);
+            color: #2d3a1c;
+            line-height: 1.6;
+            font-family: 'Noto Serif SC', serif;
+            min-height: 100vh;
+            background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23a8b89e' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3c14 0%, #3a6b2d 50%, #2d5016 100%);
+            color: #f0f5eb;
+            padding: 2rem 2rem 1.5rem;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            position: relative;
+            z-index: 1000;
+            border-bottom: 4px solid #8a9b7c;
+        }
+        
+        .header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #a8b89e, #8a9b7c, #a8b89e);
+        }
+        
+        .header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-align: center;
+            font-family: 'Ma Shan Zheng', cursive;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            color: #e8f0d8;
+        }
+        
+        .header .subtitle {
+            font-size: 1.3rem;
+            opacity: 0.95;
+            max-width: 1000px;
+            margin: 0 auto;
+            text-align: center;
+            line-height: 1.8;
+            font-weight: 400;
+            color: #d8e0c8;
+        }
+        
+        .period-info {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 1rem 1.5rem;
+            margin: 1.5rem auto 0;
+            max-width: 800px;
+            text-align: center;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .period-info .period {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0.8rem;
+            border-radius: 8px;
+        }
+        
+        .period-title {
+            color: #a8b89e;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            font-size: 0.9rem;
+        }
+        
+        .period-years {
+            color: #f0f5eb;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .map-container {
+            flex: 3;
+            min-width: 300px;
+            height: 750px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+            border: 3px solid #8a9b7c;
+            position: relative;
+            background: #e8f0e0;
+        }
+        
+        .map-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 95%, rgba(138, 155, 124, 0.1) 100%);
+            pointer-events: none;
+            z-index: 1000;
+            border-radius: 9px;
+        }
+        
+        #historical-map {
+            width: 100%;
+            height: 100%;
+            background-color: #e8f0e0;
+        }
+        
+        .info-panel {
+            flex: 2;
+            min-width: 300px;
+            background: rgba(255, 255, 250, 0.95);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border: 2px solid #b8c9a8;
+            max-height: 750px;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .info-panel::before {
+            content: "";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 60px;
+            height: 60px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%238a9b7c'%3E%3Cpath d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/%3E%3C/svg%3E");
+            opacity: 0.1;
+            z-index: 0;
+        }
+        
+        .info-panel h2 {
+            color: #1e3c14;
+            border-bottom: 3px solid #8a9b7c;
+            padding-bottom: 0.8rem;
+            margin-bottom: 1.8rem;
+            font-size: 1.8rem;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+            font-family: 'Ma Shan Zheng', cursive;
+        }
+        
+        .info-panel h2::after {
+            content: "";
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(90deg, #8a9b7c, transparent);
+        }
+        
+        .section {
+            margin-bottom: 2.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .section h3 {
+            color: #3a6b2d;
+            margin-bottom: 0.8rem;
+            font-size: 1.4rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding-left: 0.5rem;
+            border-left: 4px solid #a8b89e;
+        }
+        
+        .section h3 i {
+            color: #8a9b7c;
+        }
+        
+        .characteristics {
+            background: #f5f9f0;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border: 2px solid #d0e0c0;
+            position: relative;
+        }
+        
+        .characteristics::before {
+            content: "特点";
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: #3a6b2d;
+            color: white;
+            padding: 0.2rem 1rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+            margin: 1.5rem 0;
+        }
+        
+        .timeline::before {
+            content: "";
+            position: absolute;
+            left: 7px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(to bottom, #3a6b2d, #8a9b7c);
+            border-radius: 3px;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px dashed #c0d0b0;
+        }
+        
+        .timeline-item:last-child {
+            margin-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .timeline-item::before {
+            content: "";
+            position: absolute;
+            left: -2rem;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            background: #3a6b2d;
+            border-radius: 50%;
+            border: 3px solid #f5f9f0;
+            box-shadow: 0 0 0 2px #3a6b2d;
+        }
+        
+        .timeline-date {
+            color: #8a9b7c;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            display: inline-block;
+            padding: 0.2rem 0.8rem;
+            background: #f0f5e8;
+            border-radius: 4px;
+        }
+        
+        .timeline-content {
+            background: #f5f9f0;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #a8b89e;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .location-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .location-card {
+            background: #f5f9f0;
+            border-radius: 8px;
+            padding: 1rem;
+            border: 1px solid #c0d0b0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .location-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-color: #8a9b7c;
+        }
+        
+        .location-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3a6b2d, #a8b89e);
+        }
+        
+        .location-name {
+            font-weight: 600;
+            color: #1e3c14;
+            margin-bottom: 0.3rem;
+            font-size: 1.1rem;
+        }
+        
+        .location-desc {
+            color: #4a5a3a;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        .quote-box {
+            background: linear-gradient(135deg, #f0f5e8, #e8f0e0);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border: 2px solid #a8b89e;
+            position: relative;
+            font-style: italic;
+            color: #4a5a3a;
+        }
+        
+        .quote-box::before {
+            content: "「";
+            position: absolute;
+            top: -15px;
+            left: 15px;
+            font-size: 3rem;
+            color: #a8b89e;
+            font-family: 'Ma Shan Zheng', cursive;
+        }
+        
+        .quote-box::after {
+            content: "」";
+            position: absolute;
+            bottom: -25px;
+            right: 15px;
+            font-size: 3rem;
+            color: #a8b89e;
+            font-family: 'Ma Shan Zheng', cursive;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+            background: rgba(255, 255, 250, 0.9);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border: 2px solid #c0d0b0;
+        }
+        
+        .map-controls {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #3a6b2d, #1e3c14);
+            color: #f0f5eb;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .btn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+            z-index: -1;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #3a6b2d;
+            color: #3a6b2d;
+        }
+        
+        .btn-outline:hover {
+            background: #3a6b2d;
+            color: #f0f5eb;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            margin-top: 2rem;
+            color: #4a5a3a;
+            font-size: 0.9rem;
+            border-top: 3px solid #c0d0b0;
+            background: rgba(255, 255, 250, 0.9);
+        }
+        
+        .footer .container {
+            max-width: 800px;
+        }
+        
+        .leaflet-popup-content {
+            font-family: 'Noto Serif SC', serif;
+            max-width: 280px;
+            font-size: 0.95rem;
+        }
+        
+        .leaflet-popup-content h3 {
+            color: #1e3c14;
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-bottom: 2px solid #a8b89e;
+            padding-bottom: 0.3rem;
+        }
+        
+        .leaflet-popup-content p {
+            margin-bottom: 0.5rem;
+            line-height: 1.5;
+        }
+        
+        .leaflet-popup-content .popup-period {
+            color: #8a9b7c;
+            font-style: italic;
+            font-size: 0.9rem;
+            background: #f5f9f0;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        
+        .chapter-tabs {
+            display: flex;
+            justify-content: center;
+            margin: 1rem auto 0;
+            gap: 0.5rem;
+            max-width: 900px;
+            flex-wrap: wrap;
+        }
+        
+        .chapter-tab {
+            padding: 0.5rem 1.2rem;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 0.95rem;
+        }
+        
+        .chapter-tab:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+        
+        .chapter-tab.active {
+            background: rgba(168, 184, 158, 0.8);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .literary-style {
+            background: #f0f5e8;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-left: 4px solid #8a9b7c;
+        }
+        
+        .literary-style h4 {
+            color: #3a6b2d;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+        
+        @media (max-width: 1100px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .map-container, .info-panel {
+                width: 100%;
+            }
+            
+            .location-list {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+            
+            .period-info {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .header .subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .btn {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            .location-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .chapter-tabs {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .chapter-tab {
+                width: 90%;
+                text-align: center;
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/3.32.1/minified.js"></script>
+
+    <style class="mobile-patch">
+        /* 移动端适配补丁 */
+        @media (max-width: 768px) {
+            .leaflet-control-container .leaflet-top { top: 10px; }
+            .leaflet-control-container .leaflet-bottom { bottom: 10px; }
+            .info-panel, .legend, .time-control {
+                max-width: 95% !important;
+                font-size: 12px;
+                left: 2.5% !important;
+                right: 2.5% !important;
+            }
+            .info-panel {
+                max-height: 30vh;
+                bottom: 0;
+                top: auto;
+                border-radius: 10px 10px 0 0;
+            }
+            h1 { font-size: 1.2rem !important; }
+            #map { height: 60vh !important; }
+        }
+    </style>
+
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>王士性《越游上》卷纪行图</h1>
+            <div class="subtitle">
+                明代士人少年游历与丁忧时期的越地文化景观地图 · 展现系统客观的地理考察与诗情画意的文学描绘
+            </div>
+            
+            <div class="period-info">
+                <div class="period">
+                    <div class="period-title">考学游历时期</div>
+                    <div class="period-years">1573年 — 1577年</div>
+                </div>
+                <div class="period">
+                    <div class="period-title">为母丁忧时期</div>
+                    <div class="period-years">1585年 — 1588年</div>
+                </div>
+            </div>
+            
+            <div class="chapter-tabs">
+                <div class="chapter-tab active" data-chapter="overview">《越游上》概览</div>
+                <div class="chapter-tab" data-chapter="yuezhu">《越游注》</div>
+                <div class="chapter-tab" data-chapter="tiantai">《入天台山志》</div>
+                <div class="chapter-tab" data-chapter="yandang">《游雁宕记》</div>
+                <div class="chapter-tab" data-chapter="taizhong">《台中山水可游者记》</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="controls">
+            <div class="map-controls">
+                <button id="journey-path-btn" class="btn">
+                    <i class="fas fa-route"></i> 显示游历路线
+                </button>
+                <button id="toggle-markers-btn" class="btn btn-outline">
+                    <i class="fas fa-map-marker-alt"></i> 切换标记显示
+                </button>
+                <button id="reset-view-btn" class="btn btn-outline">
+                    <i class="fas fa-expand-arrows-alt"></i> 重置地图视图
+                </button>
+                <button id="show-all-btn" class="btn">
+                    <i class="fas fa-layer-group"></i> 显示全部地点
+                </button>
+            </div>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #1e3c14;"></div>
+                    <span>考学游历地点</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #3a6b2d;"></div>
+                    <span>丁忧游历地点</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #8a9b7c;"></div>
+                    <span>为官考察地点</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #a8b89e; border: 2px solid #8a9b7c;"></div>
+                    <span>游历路线</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="map-container">
+                <div id="historical-map"></div>
+            </div>
+            
+            <div class="info-panel">
+                <!-- 《越游上》概览 -->
+                <div class="section active" id="overview-section">
+                    <h2><i class="fas fa-book-open"></i> 《越游上》卷概览</h2>
+                    
+                    <div class="characteristics">
+                        <p>《越游上》较为系统地讲述越地形胜，主要集中于王士性少年时期和为母丁忧时期，得闲实现了遍游越地的向往，因此对越地的著述体现出更加<strong>客观、系统</strong>的特点，以<strong>行迹、路线记录</strong>为主，较少第一人称的主观介入。</p>
+                    </div>
+                    
+                    <h3><i class="fas fa-user-graduate"></i> 两个主要游历时期</h3>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-date">1573-1577年</div>
+                            <div class="timeline-content">
+                                <strong>考学游历时期</strong>：王士性考学期间，带着极大的人文关怀游览了金华、温州等地的多处山川胜景。此时的游历充满青年士子的探索精神与对人文景观的关注。
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-date">1585-1588年</div>
+                            <div class="timeline-content">
+                                <strong>为母丁忧时期</strong>：为母守丧期间，王士性带着独特的地理考察视角游历了宁绍地区、金华、温州等地，在一路游历回到台州。此时的游历更加系统深入，体现了成熟的地理学家眼光。
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h3><i class="fas fa-map-marked-alt"></i> 越地地理范围</h3>
+                    <div class="location-list">
+                        <div class="location-card" data-location="jinhua">
+                            <div class="location-name">金华</div>
+                            <div class="location-desc">婺州古城，考学期间游历</div>
+                        </div>
+                        <div class="location-card" data-location="wenzhou">
+                            <div class="location-name">温州</div>
+                            <div class="location-desc">瓯越文化中心，多处山川胜景</div>
+                        </div>
+                        <div class="location-card" data-location="ningshao">
+                            <div class="location-name">宁绍地区</div>
+                            <div class="location-desc">宁波绍兴一带，为官后考察</div>
+                        </div>
+                        <div class="location-card" data-location="taizhou">
+                            <div class="location-name">台州</div>
+                            <div class="location-desc">游历终点，王士性家乡附近</div>
+                        </div>
+                    </div>
+                    
+                    <div class="literary-style">
+                        <h4><i class="fas fa-pen-fancy"></i> 著述特点</h4>
+                        <p>《越游上》的著述体现了从考学时期的<strong>人文关怀</strong>到丁忧时期的<strong>地理考察</strong>的转变，整体上更加客观系统，以路线记录为主，较少主观介入，展现了王士性作为地理学家的严谨态度。</p>
+                    </div>
+                </div>
+                
+                <!-- 《越游注》 -->
+                <div class="section" id="yuezhu-section">
+                    <h2><i class="fas fa-map-signs"></i> 《越游注》· 越地行迹</h2>
+                    
+                    <div class="quote-box">
+                        《越游注》对越地的游览主要集中于王士性考学期间（1573年—1577年）和为母丁忧期间（1585年—1588年），带着极大的人文关怀分别游览了金华、温州等地的多处山川胜景，以及为官后带着独特的地理考察视角游历了宁绍地区、金华、温州等地，在一路游历回到台州。
+                    </div>
+                    
+                    <h3><i class="fas fa-road"></i> 游历路线与地点</h3>
+                    <div class="location-list">
+                        <div class="location-card" data-location="jinhua_detail">
+                            <div class="location-name">金华双龙洞</div>
+                            <div class="location-desc">金华著名溶洞，道教第三十六洞天</div>
+                        </div>
+                        <div class="location-card" data-location="jinhua_baxi">
+                            <div class="location-name">八咏楼</div>
+                            <div class="location-desc">南朝沈约建，历代文人题咏</div>
+                        </div>
+                        <div class="location-card" data-location="wenzhou_yan">
+                            <div class="location-name">雁荡山</div>
+                            <div class="location-desc">东南第一山，考学期间游历</div>
+                        </div>
+                        <div class="location-card" data-location="wenzhou_jiang">
+                            <div class="location-name">江心屿</div>
+                            <div class="location-desc">瓯江孤岛，有江心寺、东西塔</div>
+                        </div>
+                        <div class="location-card" data-location="ningshao_tianyi">
+                            <div class="location-name">天一阁</div>
+                            <div class="location-desc">宁波天一阁，明代藏书楼</div>
+                        </div>
+                        <div class="location-card" data-location="ningshao_yu">
+                            <div class="location-name">余姚龙泉山</div>
+                            <div class="location-desc">王阳明讲学处，浙东学术中心</div>
+                        </div>
+                        <div class="location-card" data-location="jinhua_lanxi">
+                            <div class="location-name">兰溪六洞山</div>
+                            <div class="location-desc">地下长河，六洞相连奇观</div>
+                        </div>
+                        <div class="location-card" data-location="wenzhou_nanji">
+                            <div class="location-name">南麂岛</div>
+                            <div class="location-desc">东海明珠，海山奇观</div>
+                        </div>
+                    </div>
+                    
+                    <h3><i class="fas fa-eye"></i> 考察视角的演变</h3>
+                    <div class="timeline-content" style="margin-top: 1rem;">
+                        <p><strong>考学时期（1573-1577）</strong>：以人文关怀为主，关注历史遗迹、文人题咏、地方文化，体现士子的人文素养。</p>
+                        <p><strong>丁忧时期（1585-1588）</strong>：转为地理考察视角，关注山川形胜、地理特征、交通路线，展现地理学家的专业眼光。</p>
+                        <p><strong>为官后考察</strong>：结合人文与地理，系统记录宁绍地区、金华、温州等地，最终回到台州，完成对越地的全面考察。</p>
+                    </div>
+                </div>
+                
+                <!-- 《入天台山志》 -->
+                <div class="section" id="tiantai-section">
+                    <h2><i class="fas fa-mountain"></i> 《入天台山志》· 诗情画意</h2>
+                    
+                    <div class="quote-box">
+                        以王士性的行迹路线为线索，对天台山的观察细致入微，一路见闻描绘极富诗情画意，属于文学性较强的游记作品。
+                    </div>
+                    
+                    <div class="literary-style">
+                        <h4><i class="fas fa-feather-alt"></i> 文学特点</h4>
+                        <p>《入天台山志》是《越游上》卷中文学性最强的作品，王士性以细腻的笔触描绘天台山的自然景观和人文遗迹，将地理考察与文学描绘完美结合，体现了"诗情画意"的特点。</p>
+                    </div>
+                    
+                    <h3><i class="fas fa-hiking"></i> 天台山游历路线</h3>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-content">
+                                <strong>国清寺</strong>：天台宗祖庭，隋代古刹，王士性考察佛教文化
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-content">
+                                <strong>石梁飞瀑</strong>：天然石梁横跨瀑布，天台山奇观
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-content">
+                                <strong>华顶山</strong>：天台山主峰，云海杜鹃，王士性登高望远
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-content">
+                                <strong>琼台仙谷</strong>：峡谷幽深，道教福地，王士性记述道教文化
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-content">
+                                <strong>赤城山</strong>：丹霞地貌，梁妃塔耸立，王士性关注地质特征
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h3><i class="fas fa-landmark"></i> 文化遗迹关注</h3>
+                    <div class="location-list">
+                        <div class="location-card" data-location="guoqing">
+                            <div class="location-name">国清寺</div>
+                            <div class="location-desc">佛教天台宗祖庭，隋代古刹</div>
+                        </div>
+                        <div class="location-card" data-location="liangfeita">
+                            <div class="location-name">梁妃塔</div>
+                            <div class="location-desc">赤城山顶，南朝古塔</div>
+                        </div>
+                        <div class="location-card" data-location="bashui">
+                            <div class="location-name">八寺</div>
+                            <div class="location-desc">天台山八大寺院，佛教文化深厚</div>
+                        </div>
+                        <div class="location-card" data-location="dongtian">
+                            <div class="location-name">洞天宫</div>
+                            <div class="location-desc">道教宫观，道教第六洞天</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 《游雁宕记》 -->
+                <div class="section" id="yandang-section">
+                    <h2><i class="fas fa-mountain"></i> 《游雁宕记》· 奇峰揽胜</h2>
+                    
+                    <div class="quote-box">
+                        以总分式的结构，较为全面展现了雁荡山奇峰各异的特点，其中许多仍旧是现代旅游的著名景点。
+                    </div>
+                    
+                    <h3><i class="fas fa-layer-group"></i> 总分式结构特点</h3>
+                    <div class="timeline-content" style="margin-top: 1rem;">
+                        <p>《游雁宕记》采用总分式结构：</p>
+                        <p><strong>总述</strong>：雁荡山整体地理特征、历史沿革、文化地位</p>
+                        <p><strong>分述</strong>：按游览路线分别记述灵峰、灵岩、大龙湫、三折瀑等景区</p>
+                        <p><strong>总结</strong>：对雁荡山整体评价，体现地理学家的综合眼光</p>
+                    </div>
+                    
+                    <h3><i class="fas fa-map-pin"></i> 雁荡山主要景点</h3>
+                    <div class="location-list">
+                        <div class="location-card" data-location="lingfeng">
+                            <div class="location-name">灵峰景区</div>
+                            <div class="location-desc">合掌峰、观音洞，夜景尤为著名</div>
+                        </div>
+                        <div class="location-card" data-location="lingyan">
+                            <div class="location-name">灵岩景区</div>
+                            <div class="location-desc">灵岩寺、小龙湫、天柱峰</div>
+                        </div>
+                        <div class="location-card" data-location="dalongqiu">
+                            <div class="location-name">大龙湫景区</div>
+                            <div class="location-desc">中国四大名瀑之一，落差197米</div>
+                        </div>
+                        <div class="location-card" data-location="sanzhepu">
+                            <div class="location-name">三折瀑景区</div>
+                            <div class="location-desc">同一水流经三处悬崖成三折瀑布</div>
+                        </div>
+                        <div class="location-card" data-location="xianqiao">
+                            <div class="location-name">仙桥景区</div>
+                            <div class="location-desc">仙人桥横跨两峰，天然石桥奇观</div>
+                        </div>
+                        <div class="location-card" data-location="yangjiao">
+                            <div class="location-name">羊角洞景区</div>
+                            <div class="location-desc">道教胜地，洞府幽深</div>
+                        </div>
+                        <div class="location-card" data-location="xiangu">
+                            <div class="location-name">仙姑洞</div>
+                            <div class="location-desc">朱砂峰下，传说仙姑修道处</div>
+                        </div>
+                        <div class="location-card" data-location="shuangzhu">
+                            <div class="location-name">双珠谷</div>
+                            <div class="location-desc">两瀑布如双珠垂落，王士性细致描绘</div>
+                        </div>
+                    </div>
+                    
+                    <div class="literary-style">
+                        <h4><i class="fas fa-binoculars"></i> 观察特点</h4>
+                        <p>王士性在《游雁宕记》中对雁荡山的观察既关注宏观的山川布局，又细致描绘具体景点的特征，体现了地理学家的系统观察与文学家的细腻描绘相结合的特点。</p>
+                    </div>
+                </div>
+                
+                <!-- 《台中山水可游者记》 -->
+                <div class="section" id="taizhong-section">
+                    <h2><i class="fas fa-water"></i> 《台中山水可游者记》· 家乡山水</h2>
+                    
+                    <div class="quote-box">
+                        记录了台州城郡部分可游的佳山奇水，言简意赅、词意肯切，譬如东湖、灵峰寺，相对位置及可观之景记录清晰。
+                    </div>
+                    
+                    <h3><i class="fas fa-home"></i> 台州家乡山水</h3>
+                    <div class="timeline-content" style="margin-top: 1rem;">
+                        <p>作为王士性的家乡附近地区，台州的记述体现了更为熟悉和亲切的情感。《台中山水可游者记》以简洁明了的语言，系统地记录了台州城郡的可游之处，体现了他对家乡山水的深厚感情和深入了解。</p>
+                    </div>
+                    
+                    <h3><i class="fas fa-map-marked-alt"></i> 台州主要景点</h3>
+                    <div class="location-list">
+                        <div class="location-card" data-location="donghu">
+                            <div class="location-name">东湖</div>
+                            <div class="location-desc">台州城内湖泊，亭台楼阁点缀</div>
+                        </div>
+                        <div class="location-card" data-location="lingfengsi">
+                            <div class="location-name">灵峰寺</div>
+                            <div class="location-desc">天台山支脉，古寺幽深</div>
+                        </div>
+                        <div class="location-card" data-location="jiangdong">
+                            <div class="location-name">江南长城</div>
+                            <div class="location-desc">台州府城墙，明代抗倭遗址</div>
+                        </div>
+                        <div class="location-card" data-location="ziyang">
+                            <div class="location-name">紫阳古街</div>
+                            <div class="location-desc">临海古街，宋代街巷格局</div>
+                        </div>
+                        <div class="location-card" data-location="taizhou_fu">
+                            <div class="location-name">台州府文庙</div>
+                            <div class="location-desc">府学所在地，儒学文化中心</div>
+                        </div>
+                        <div class="location-card" data-location="linhai">
+                            <div class="location-name">临海桃渚</div>
+                            <div class="location-desc">抗倭古城，军事防御体系完整</div>
+                        </div>
+                        <div class="location-card" data-location="wenling">
+                            <div class="location-name">温岭方山</div>
+                            <div class="location-desc">火山岩地貌，平台方正如山</div>
+                        </div>
+                        <div class="location-card" data-location="xianju">
+                            <div class="location-name">仙居景星岩</div>
+                            <div class="location-desc">悬崖上的村庄，奇特地貌</div>
+                        </div>
+                    </div>
+                    
+                    <h3><i class="fas fa-pen"></i> 记述特点</h3>
+                    <div class="literary-style">
+                        <h4><i class="fas fa-file-alt"></i> 言简意赅、词意肯切</h4>
+                        <p>《台中山水可游者记》的记述风格简洁明了：</p>
+                        <p><strong>位置清晰</strong>：每个景点的相对位置记录准确</p>
+                        <p><strong>特征突出</strong>：抓住每个景点最显著的特点</p>
+                        <p><strong>评价中肯</strong>：客观评价景点的观赏价值</p>
+                        <p><strong>实用导向</strong>：为后人游览提供明确的指引</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <div class="container">
+            本文化景观地图基于《越游上》卷文献记载还原王士性越地游历历程 · 数据来源：历史文献与地理考证
+            <br><br>
+            <div style="color: #8a9b7c; font-style: italic;">
+                "《越游上》较为系统地讲述越地形胜，以行迹、路线记录为主，较少第一人称的主观介入。"
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // 初始化地图，聚焦越地（浙江）地区
+        const map = L.map('historical-map').setView([29.0, 120.5], 8);
+        
+        // 添加自定义风格底图
+        const customBasemap = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors, © CARTO',
+            maxZoom: 12,
+            minZoom: 6
+        }).addTo(map);
+        
+        // 添加水墨风格图层
+        const inkStyle = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>.0. Data by OpenStreetMap, under ODbL.',
+            maxZoom: 12,
+            minZoom: 6,
+            opacity: 0.3
+        }).addTo(map);
+        
+        // 越地地点数据
+        const locations = {
+            // 概览地点
+            overview: {
+                jinhua: { 
+                    name: "金华", 
+                    coords: [29.08, 119.65], 
+                    type: "city", 
+                    period: "exam",
+                    description: "婺州古城，王士性考学期间游历。金华历史悠久，秦置乌伤县，唐称婺州，南宋为陪都。王士性游览了双龙洞、八咏楼等名胜。",
+                    quote: "金华山水，双龙奇洞，八咏名楼。"
+                },
+                wenzhou: { 
+                    name: "温州", 
+                    coords: [28.00, 120.70], 
+                    type: "city", 
+                    period: "exam",
+                    description: "瓯越文化中心，王士性考学期间游览多处山川胜景。温州东临东海，南接福建，有'东南山水甲天下'之誉。",
+                    quote: "温州瓯越地，江心孤屿，雁荡奇峰。"
+                },
+                ningshao: { 
+                    name: "宁绍地区", 
+                    coords: [29.87, 121.55], 
+                    type: "region", 
+                    period: "official",
+                    description: "宁波绍兴一带，王士性为官后考察。宁绍平原是浙江最富庶的地区，文化昌盛，有天一阁、河姆渡等文化遗产。",
+                    quote: "宁绍富庶地，天一藏书，姚江学术。"
+                },
+                taizhou: { 
+                    name: "台州", 
+                    coords: [28.66, 121.42], 
+                    type: "city", 
+                    period: "official",
+                    description: "游历终点，王士性家乡附近。台州东临东海，'台州地阔海冥冥'，有天台山、江南长城等胜迹。",
+                    quote: "台州山海城，天台佛国，江南长城。"
+                }
+            },
+            
+            // 《越游注》地点
+            yuezhu: {
+                jinhua_detail: { 
+                    name: "金华双龙洞", 
+                    coords: [29.12, 119.60], 
+                    type: "cave", 
+                    period: "exam",
+                    description: "金华著名溶洞，道教第三十六洞天。王士性考学期间游览，记述了洞内的钟乳石奇观和道教文化遗迹。",
+                    quote: "双龙洞幽深，钟乳垂挂，道教洞天。"
+                },
+                jinhua_baxi: { 
+                    name: "八咏楼", 
+                    coords: [29.10, 119.65], 
+                    type: "building", 
+                    period: "exam",
+                    description: "南朝沈约建，历代文人题咏。原名玄畅楼，沈约题《八咏诗》后改名。王士性登楼怀古，感怀文人传统。",
+                    quote: "八咏楼巍然，沈约诗在，千古风流。"
+                },
+                wenzhou_yan: { 
+                    name: "雁荡山", 
+                    coords: [28.37, 121.08], 
+                    type: "mountain", 
+                    period: "exam",
+                    description: "东南第一山，考学期间游历。王士性对雁荡山有专篇《游雁宕记》，详细记述了灵峰、灵岩、大龙湫等景区。",
+                    quote: "雁荡奇峰，东南第一，徐霞客三游之地。"
+                },
+                wenzhou_jiang: { 
+                    name: "江心屿", 
+                    coords: [28.02, 120.65], 
+                    type: "island", 
+                    period: "exam",
+                    description: "瓯江孤岛，有江心寺、东西塔。王士性游览时记述了岛屿的地理位置和江心寺的历史。",
+                    quote: "江心孤屿，双塔凌空，瓯江明珠。"
+                },
+                ningshao_tianyi: { 
+                    name: "天一阁", 
+                    coords: [29.87, 121.53], 
+                    type: "library", 
+                    period: "official",
+                    description: "宁波天一阁，明代藏书楼，亚洲最古老的私家藏书楼。王士性为官后考察，关注其建筑布局和藏书管理。",
+                    quote: "天一藏书，范氏所建，典籍之府。"
+                },
+                ningshao_yu: { 
+                    name: "余姚龙泉山", 
+                    coords: [30.05, 121.15], 
+                    type: "mountain", 
+                    period: "official",
+                    description: "王阳明讲学处，浙东学术中心。王士性考察了龙泉山的书院文化和王阳明遗迹。",
+                    quote: "龙泉山上，阳明讲学，浙东学术渊薮。"
+                },
+                jinhua_lanxi: { 
+                    name: "兰溪六洞山", 
+                    coords: [29.22, 119.48], 
+                    type: "cave", 
+                    period: "exam",
+                    description: "地下长河，六洞相连奇观。王士性详细记述了地下河的水文特征和洞穴地貌。",
+                    quote: "六洞相连，地下长河，地质奇观。"
+                },
+                wenzhou_nanji: { 
+                    name: "南麂岛", 
+                    coords: [27.47, 121.07], 
+                    type: "island", 
+                    period: "official",
+                    description: "东海明珠，海山奇观。王士性考察了岛屿的地理位置、海洋资源和渔业情况。",
+                    quote: "南麂海岛，碧海金沙，东海明珠。"
+                }
+            },
+            
+            // 《入天台山志》地点
+            tiantai: {
+                guoqing: { 
+                    name: "国清寺", 
+                    coords: [29.17, 121.05], 
+                    type: "temple", 
+                    period: "exam",
+                    description: "佛教天台宗祖庭，隋代古刹。王士性考察佛教文化，详细记述了寺院的建筑布局和历史沿革。",
+                    quote: "国清古刹，天台祖庭，隋梅犹在。"
+                },
+                shiliang: { 
+                    name: "石梁飞瀑", 
+                    coords: [29.15, 121.10], 
+                    type: "waterfall", 
+                    period: "exam",
+                    description: "天然石梁横跨瀑布，天台山奇观。王士性细致描绘了石梁的地质特征和瀑布的景观。",
+                    quote: "石梁横空，飞瀑如练，天台奇观。"
+                },
+                huading: { 
+                    name: "华顶山", 
+                    coords: [29.25, 121.12], 
+                    type: "mountain", 
+                    period: "exam",
+                    description: "天台山主峰，云海杜鹃，王士性登高望远。记述了山顶的气候特征和植被分布。",
+                    quote: "华顶云海，千年杜鹃，登高望远。"
+                },
+                qiongtai: { 
+                    name: "琼台仙谷", 
+                    coords: [29.12, 121.08], 
+                    type: "valley", 
+                    period: "exam",
+                    description: "峡谷幽深，道教福地，王士性记述道教文化。描绘了峡谷的地形地貌和道教宫观。",
+                    quote: "琼台仙谷，峡谷幽深，道教福地。"
+                },
+                chicheng: { 
+                    name: "赤城山", 
+                    coords: [29.18, 121.03], 
+                    type: "mountain", 
+                    period: "exam",
+                    description: "丹霞地貌，梁妃塔耸立，王士性关注地质特征。记述了赤城山的丹霞地貌和梁妃塔的历史。",
+                    quote: "赤城丹霞，梁妃塔影，地质人文俱佳。"
+                },
+                liangfeita: { 
+                    name: "梁妃塔", 
+                    coords: [29.19, 121.03], 
+                    type: "tower", 
+                    period: "exam",
+                    description: "赤城山顶，南朝古塔。王士性考证了塔的修建年代和历史典故。",
+                    quote: "梁妃古塔，南朝遗迹，赤城标志。"
+                },
+                bashui: { 
+                    name: "八寺", 
+                    coords: [29.17, 121.06], 
+                    type: "temple", 
+                    period: "exam",
+                    description: "天台山八大寺院，佛教文化深厚。王士性系统考察了天台山的佛教寺院分布。",
+                    quote: "天台八寺，佛教丛林，文化深厚。"
+                },
+                dongtian: { 
+                    name: "洞天宫", 
+                    coords: [29.14, 121.07], 
+                    type: "temple", 
+                    period: "exam",
+                    description: "道教宫观，道教第六洞天。王士性记述了道教的洞天福地文化。",
+                    quote: "洞天福地，道教宫观，文化遗迹。"
+                }
+            },
+            
+            // 《游雁宕记》地点
+            yandang: {
+                lingfeng: { 
+                    name: "灵峰景区", 
+                    coords: [28.37, 121.08], 
+                    type: "mountain", 
+                    period: "exam",
+                    description: "合掌峰、观音洞，夜景尤为著名。王士性详细描绘了灵峰夜景的奇妙变化。",
+                    quote: "灵峰夜景，移步换形，造化神奇。"
+                },
+                lingyan: { 
+                    name: "灵岩景区", 
+                    coords: [28.35, 121.07], 
+                    type: "mountain", 
+                    period: "exam",
+                    description: "灵岩寺、小龙湫、天柱峰。王士性记述了灵岩寺的历史和周围的奇峰。",
+                    quote: "灵岩古寺，小龙飞瀑，天柱擎天。"
+                },
+                dalongqiu: { 
+                    name: "大龙湫景区", 
+                    coords: [28.33, 121.06], 
+                    type: "waterfall", 
+                    period: "exam",
+                    description: "中国四大名瀑之一，落差197米。王士性测量了瀑布的高度和水量变化。",
+                    quote: "大龙湫瀑，银河落天，四季变幻。"
+                },
+                sanzhepu: { 
+                    name: "三折瀑景区", 
+                    coords: [28.36, 121.09], 
+                    type: "waterfall", 
+                    period: "exam",
+                    description: "同一水流经三处悬崖成三折瀑布。王士性分析了瀑布形成的地质原因。",
+                    quote: "三折瀑布，一水三折，地质奇观。"
+                },
+                xianqiao: { 
+                    name: "仙桥景区", 
+                    coords: [28.38, 121.05], 
+                    type: "bridge", 
+                    period: "exam",
+                    description: "仙人桥横跨两峰，天然石桥奇观。王士性考察了石桥的地质构造。",
+                    quote: "仙桥横空，天然石桥，鬼斧神工。"
+                },
+                yangjiao: { 
+                    name: "羊角洞景区", 
+                    coords: [28.40, 121.10], 
+                    type: "cave", 
+                    period: "exam",
+                    description: "道教胜地，洞府幽深。王士性记述了洞内的道教文化和地质特征。",
+                    quote: "羊角洞幽，道教胜地，文化遗迹。"
+                },
+                xiangu: { 
+                    name: "仙姑洞", 
+                    coords: [28.34, 121.08], 
+                    type: "cave", 
+                    period: "exam",
+                    description: "朱砂峰下，传说仙姑修道处。王士性记录了民间传说和洞内景观。",
+                    quote: "仙姑洞府，传说幽美，景观奇特。"
+                },
+                shuangzhu: { 
+                    name: "双珠谷", 
+                    coords: [28.32, 121.09], 
+                    type: "valley", 
+                    period: "exam",
+                    description: "两瀑布如双珠垂落，王士性细致描绘。详细记述了瀑布的形态和周围环境。",
+                    quote: "双珠垂落，峡谷幽深，景色宜人。"
+                }
+            },
+            
+            // 《台中山水可游者记》地点
+            taizhong: {
+                donghu: { 
+                    name: "东湖", 
+                    coords: [28.85, 121.12], 
+                    type: "lake", 
+                    period: "official",
+                    description: "台州城内湖泊，亭台楼阁点缀。王士性记述了东湖的园林布局和景观特点。",
+                    quote: "东湖如镜，亭台点缀，园林佳作。"
+                },
+                lingfengsi: { 
+                    name: "灵峰寺", 
+                    coords: [28.66, 121.25], 
+                    type: "temple", 
+                    period: "official",
+                    description: "天台山支脉，古寺幽深。王士性详细记录了寺院的建筑和历史。",
+                    quote: "灵峰古寺，山幽林静，佛门清净地。"
+                },
+                jiangdong: { 
+                    name: "江南长城", 
+                    coords: [28.85, 121.15], 
+                    type: "wall", 
+                    period: "official",
+                    description: "台州府城墙，明代抗倭遗址。王士性考察了城墙的防御体系和历史作用。",
+                    quote: "江南长城，抗倭遗址，军事工程杰作。"
+                },
+                ziyang: { 
+                    name: "紫阳古街", 
+                    coords: [28.85, 121.13], 
+                    type: "street", 
+                    period: "official",
+                    description: "临海古街，宋代街巷格局。王士性记录了街道的布局和商业情况。",
+                    quote: "紫阳古街，宋时格局，商业繁盛。"
+                },
+                taizhou_fu: { 
+                    name: "台州府文庙", 
+                    coords: [28.84, 121.14], 
+                    type: "temple", 
+                    period: "official",
+                    description: "府学所在地，儒学文化中心。王士性考察了文庙的建筑和教育活动。",
+                    quote: "府学文庙，儒学中心，教化之地。"
+                },
+                linhai: { 
+                    name: "临海桃渚", 
+                    coords: [28.80, 121.45], 
+                    type: "town", 
+                    period: "official",
+                    description: "抗倭古城，军事防御体系完整。王士性详细记述了桃渚的防御工事和历史战事。",
+                    quote: "桃渚古城，抗倭要塞，军事遗存。"
+                },
+                wenling: { 
+                    name: "温岭方山", 
+                    coords: [28.45, 121.35], 
+                    type: "mountain", 
+                    period: "official",
+                    description: "火山岩地貌，平台方正如山。王士性分析了方山的地质成因。",
+                    quote: "方山平台，火山岩貌，地质标本。"
+                },
+                xianju: { 
+                    name: "仙居景星岩", 
+                    coords: [28.75, 120.75], 
+                    type: "mountain", 
+                    period: "official",
+                    description: "悬崖上的村庄，奇特地貌。王士性记述了景星岩的地形和民居特点。",
+                    quote: "景星岩奇，悬崖村落，人居奇迹。"
+                }
+            }
+        };
+        
+        // 时期颜色
+        const periodColors = {
+            exam: "#1e3c14",      // 考学时期 - 深绿
+            mourning: "#3a6b2d",  // 丁忧时期 - 中绿
+            official: "#8a9b7c"   // 为官时期 - 灰绿
+        };
+        
+        // 章节颜色（用于路线）
+        const chapterColors = {
+            overview: "#1e3c14",
+            yuezhu: "#3a6b2d",
+            tiantai: "#2d5016",
+            yandang: "#4a7c3a",
+            taizhong: "#8a9b7c"
+        };
+        
+        // 存储标记
+        let markers = {};
+        let currentChapter = 'overview';
+        let routesVisible = true;
+        let markersVisible = true;
+        
+        // 路线数据
+        const routes = {
+            overview: [
+                locations.overview.jinhua.coords,
+                locations.overview.wenzhou.coords,
+                locations.overview.ningshao.coords,
+                locations.overview.taizhou.coords
+            ],
+            yuezhu: [
+                locations.yuezhu.jinhua_detail.coords,
+                locations.yuezhu.jinhua_baxi.coords,
+                locations.yuezhu.wenzhou_yan.coords,
+                locations.yuezhu.wenzhou_jiang.coords,
+                locations.yuezhu.ningshao_tianyi.coords,
+                locations.yuezhu.ningshao_yu.coords,
+                locations.yuezhu.jinhua_lanxi.coords,
+                locations.yuezhu.wenzhou_nanji.coords
+            ],
+            tiantai: [
+                locations.tiantai.guoqing.coords,
+                locations.tiantai.shiliang.coords,
+                locations.tiantai.huading.coords,
+                locations.tiantai.qiongtai.coords,
+                locations.tiantai.chicheng.coords
+            ],
+            yandang: [
+                locations.yandang.lingfeng.coords,
+                locations.yandang.lingyan.coords,
+                locations.yandang.dalongqiu.coords,
+                locations.yandang.sanzhepu.coords,
+                locations.yandang.xianqiao.coords,
+                locations.yandang.yangjiao.coords
+            ],
+            taizhong: [
+                locations.taizhong.donghu.coords,
+                locations.taizhong.lingfengsi.coords,
+                locations.taizhong.jiangdong.coords,
+                locations.taizhong.ziyang.coords,
+                locations.taizhong.taizhou_fu.coords,
+                locations.taizhong.linhai.coords
+            ]
+        };
+        
+        // 路线图层
+        let routeLayers = {};
+        
+        // 获取时期名称
+        function getPeriodName(periodKey) {
+            switch(periodKey) {
+                case 'exam': return '考学时期（1573-1577）';
+                case 'mourning': return '丁忧时期（1585-1588）';
+                case 'official': return '为官考察时期';
+                default: return '';
+            }
+        }
+        
+        // 获取章节名称
+        function getChapterName(chapterKey) {
+            switch(chapterKey) {
+                case 'overview': return '《越游上》概览';
+                case 'yuezhu': return '《越游注》';
+                case 'tiantai': return '《入天台山志》';
+                case 'yandang': return '《游雁宕记》';
+                case 'taizhong': return '《台中山水可游者记》';
+                default: return '';
+            }
+        }
+        
+        // 初始化标记
+        function initMarkers(chapter = null) {
+            // 清除现有标记
+            Object.values(markers).forEach(marker => {
+                if (marker) map.removeLayer(marker);
+            });
+            markers = {};
+            
+            // 添加标记
+            Object.keys(locations).forEach(chapterKey => {
+                if (!chapter || chapter === chapterKey || chapter === 'all') {
+                    Object.keys(locations[chapterKey]).forEach(locKey => {
+                        const location = locations[chapterKey][locKey];
+                        const color = periodColors[location.period];
+                        
+                        const marker = L.circleMarker(location.coords, {
+                            color: color,
+                            fillColor: color,
+                            fillOpacity: 0.9,
+                            radius: 9,
+                            weight: 2,
+                            className: `map-marker ${chapterKey}`
+                        });
+                        
+                        if (markersVisible) {
+                            marker.addTo(map);
+                        }
+                        
+                        marker.bindPopup(`
+                            <h3>${location.name}</h3>
+                            <p class="popup-period">${getPeriodName(location.period)} · ${getChapterName(chapterKey)}</p>
+                            <p>${location.description}</p>
+                            <p><em>${location.quote}</em></p>
+                        `);
+                        
+                        markers[`${chapterKey}_${locKey}`] = marker;
+                        
+                        // 为重要地点添加标签
+                        if (['jinhua', 'wenzhou', 'taizhou'].includes(locKey) || 
+                            ['guoqing', 'lingfeng', 'donghu'].includes(locKey)) {
+                            L.marker(location.coords, {
+                                icon: L.divIcon({
+                                    className: 'location-label',
+                                    html: `<div style="font-weight:bold;color:${color};text-shadow:2px 2px 4px white;font-size:12px;padding:2px 8px;background:rgba(255,255,255,0.7);border-radius:10px;border:1px solid ${color}">${location.name}</div>`,
+                                    iconSize: [80, 25],
+                                    iconAnchor: [40, 12]
+                                })
+                            }).addTo(map);
+                        }
+                    });
+                }
+            });
+        }
+        
+        // 初始化路线
+        function initRoutes(chapter = null) {
+            // 清除现有路线
+            Object.values(routeLayers).forEach(layer => {
+                if (layer) map.removeLayer(layer);
+            });
+            routeLayers = {};
+            
+            // 添加路线
+            Object.keys(routes).forEach(chapterKey => {
+                if (!chapter || chapter === chapterKey || chapter === 'all') {
+                    const color = chapterColors[chapterKey];
+                    routeLayers[chapterKey] = L.polyline(routes[chapterKey], {
+                        color: color,
+                        weight: chapter === 'all' ? 3 : 4,
+                        opacity: chapter === 'all' ? 0.6 : 0.8,
+                        dashArray: chapter === 'all' ? '6, 6' : '8, 8',
+                        lineCap: 'round'
+                    });
+                    
+                    if (routesVisible && (!chapter || chapter === chapterKey || chapter === 'all')) {
+                        routeLayers[chapterKey].addTo(map);
+                    }
+                }
+            });
+        }
+        
+        // 章节选项卡交互
+        document.querySelectorAll('.chapter-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // 更新选项卡状态
+                document.querySelectorAll('.chapter-tab').forEach(t => {
+                    t.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // 更新信息面板
+                const chapter = this.getAttribute('data-chapter');
+                document.querySelectorAll('.section').forEach(sec => {
+                    sec.classList.remove('active');
+                });
+                document.getElementById(`${chapter}-section`).classList.add('active');
+                
+                // 更新地图显示
+                currentChapter = chapter;
+                initMarkers(chapter);
+                initRoutes(chapter);
+                
+                // 调整地图视图
+                switch(chapter) {
+                    case 'overview':
+                        map.setView([29.0, 120.5], 8);
+                        break;
+                    case 'yuezhu':
+                        map.setView([28.5, 120.5], 8);
+                        break;
+                    case 'tiantai':
+                        map.setView([29.17, 121.05], 11);
+                        break;
+                    case 'yandang':
+                        map.setView([28.37, 121.08], 11);
+                        break;
+                    case 'taizhong':
+                        map.setView([28.85, 121.15], 10);
+                        break;
+                }
+                
+                // 更新位置卡片交互
+                setupLocationCards(chapter);
+            });
+        });
+        
+        // 位置卡片交互
+        function setupLocationCards(chapter) {
+            document.querySelectorAll('.location-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const locationKey = this.getAttribute('data-location');
+                    
+                    // 查找对应章节的地点
+                    let foundLocation = null;
+                    let foundChapter = null;
+                    
+                    Object.keys(locations).forEach(chapterKey => {
+                        if (locations[chapterKey][locationKey]) {
+                            foundLocation = locations[chapterKey][locationKey];
+                            foundChapter = chapterKey;
+                        }
+                    });
+                    
+                    if (foundLocation) {
+                        // 移动地图视图到该地点
+                        map.setView(foundLocation.coords, 13);
+                        
+                        // 打开该地点的弹出信息
+                        const markerKey = `${foundChapter}_${locationKey}`;
+                        if (markers[markerKey]) {
+                            markers[markerKey].openPopup();
+                        }
+                    }
+                });
+            });
+        }
+        
+        // 按钮交互
+        document.getElementById('journey-path-btn').addEventListener('click', function() {
+            routesVisible = !routesVisible;
+            
+            if (routesVisible) {
+                initRoutes(currentChapter === 'all' ? 'all' : currentChapter);
+                this.innerHTML = '<i class="fas fa-route"></i> 隐藏游历路线';
+            } else {
+                Object.values(routeLayers).forEach(layer => {
+                    if (layer) map.removeLayer(layer);
+                });
+                this.innerHTML = '<i class="fas fa-route"></i> 显示游历路线';
+            }
+        });
+        
+        document.getElementById('toggle-markers-btn').addEventListener('click', function() {
+            markersVisible = !markersVisible;
+            
+            Object.values(markers).forEach(marker => {
+                if (markersVisible) {
+                    if (marker && !map.hasLayer(marker)) {
+                        marker.addTo(map);
+                    }
+                } else {
+                    if (marker && map.hasLayer(marker)) {
+                        map.removeLayer(marker);
+                    }
+                }
+            });
+            
+            this.innerHTML = markersVisible ? 
+                '<i class="fas fa-map-marker-alt"></i> 隐藏标记' : 
+                '<i class="fas fa-map-marker-alt"></i> 显示标记';
+        });
+        
+        document.getElementById('reset-view-btn').addEventListener('click', function() {
+            map.setView([29.0, 120.5], 8);
+        });
+        
+        document.getElementById('show-all-btn').addEventListener('click', function() {
+            currentChapter = 'all';
+            initMarkers('all');
+            initRoutes('all');
+            map.setView([29.0, 120.5], 8);
+            
+            // 激活概览选项卡
+            document.querySelectorAll('.chapter-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.getAttribute('data-chapter') === 'overview') {
+                    tab.classList.add('active');
+                }
+            });
+            
+            // 显示概览信息
+            document.querySelectorAll('.section').forEach(sec => {
+                sec.classList.remove('active');
+            });
+            document.getElementById('overview-section').classList.add('active');
+        });
+        
+        // 添加主要水系
+        const qiantangRiver = [
+            [29.5, 120.0],
+            [29.3, 120.2],
+            [29.1, 120.4],
+            [28.9, 120.6],
+            [28.7, 120.8]
+        ];
+        
+        L.polyline(qiantangRiver, {
+            color: '#4a90e2',
+            weight: 2,
+            opacity: 0.6,
+            dashArray: '5, 5'
+        }).addTo(map).bindPopup('钱塘江');
+        
+        const ouRiver = [
+            [28.5, 120.0],
+            [28.3, 120.3],
+            [28.0, 120.65],
+            [27.8, 120.9]
+        ];
+        
+        L.polyline(ouRiver, {
+            color: '#4a90e2',
+            weight: 2,
+            opacity: 0.6,
+            dashArray: '5, 5'
+        }).addTo(map).bindPopup('瓯江');
+        
+        // 初始化标记和路线
+        initMarkers(currentChapter);
+        initRoutes(currentChapter);
+        setupLocationCards(currentChapter);
+        
+        // 添加天台山和雁荡山范围
+        const tiantaiArea = L.circle([29.17, 121.05], {
+            color: '#3a6b2d',
+            fillColor: '#3a6b2d',
+            fillOpacity: 0.1,
+            radius: 8000
+        }).addTo(map).bindPopup('天台山');
+        
+        const yandangArea = L.circle([28.37, 121.08], {
+            color: '#4a7c3a',
+            fillColor: '#4a7c3a',
+            fillOpacity: 0.1,
+            radius: 6000
+        }).addTo(map).bindPopup('雁荡山');
+    </script>
+</body>
+</html>
