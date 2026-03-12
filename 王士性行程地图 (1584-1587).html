@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>王士性行程地图 (1584-1587)</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft YaHei", sans-serif;
+            background-color: #f5f2e9;
+        }
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+        .info-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            max-width: 300px;
+        }
+        .location-label {
+            position: absolute;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 12px;
+            white-space: nowrap;
+            pointer-events: none;
+            border: 1px solid #ddd;
+        }
+        .event-marker {
+            background-color: #3388ff;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        .route-marker {
+            background-color: #ff8c00;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        .legend {
+            line-height: 18px;
+            color: #555;
+            font-size: 12px;
+        }
+        h1 {
+            margin-top: 0;
+            font-size: 16px;
+            color: #333;
+            text-align: center;
+        }
+        .year-filter {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/3.32.1/minified.js"></script>
+
+    <style class="mobile-patch">
+        /* 移动端适配补丁 */
+        @media (max-width: 768px) {
+            .leaflet-control-container .leaflet-top { top: 10px; }
+            .leaflet-control-container .leaflet-bottom { bottom: 10px; }
+            .info-panel, .legend, .time-control {
+                max-width: 95% !important;
+                font-size: 12px;
+                left: 2.5% !important;
+                right: 2.5% !important;
+            }
+            .info-panel {
+                max-height: 30vh;
+                bottom: 0;
+                top: auto;
+                border-radius: 10px 10px 0 0;
+            }
+            h1 { font-size: 1.2rem !important; }
+            #map { height: 60vh !important; }
+        }
+    </style>
+
+</head>
+<body>
+    <div id="map"></div>
+    <div class="info-panel">
+        <h1>王士性行程地图 (1584-1587)</h1>
+        <div class="legend">
+            <div><i style="background: #3388ff; width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px;"></i> 事件地点</div>
+            <div><i style="background: #ff8c00; width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px;"></i> 行程路线</div>
+        </div>
+    </div>
+    <div class="year-filter">
+        <h3>年份筛选</h3>
+        <label><input type="checkbox" class="year-checkbox" value="1584" checked> 1584年</label><br>
+        <label><input type="checkbox" class="year-checkbox" value="1585" checked> 1585年</label><br>
+        <label><input type="checkbox" class="year-checkbox" value="1586" checked> 1586年</label><br>
+        <label><input type="checkbox" class="year-checkbox" value="1587" checked> 1587年</label>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // 初始化地图，中心点设为江南地区
+        var map = L.map('map').setView([30.0, 118.0], 6);
+
+        // 使用标准地图作为底图
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            minZoom: 5,
+            maxZoom: 10
+        }).addTo(map);
+
+        // 地点数据
+        var locations = [
+            {
+                name: "京师(北京)",
+                event: "1584年在京",
+                lat: 39.9042,
+                lng: 116.4074,
+                year: 1584,
+                type: "event"
+            },
+            {
+                name: "中都(滁州)",
+                event: "1585年途经中都",
+                lat: 32.3012,
+                lng: 118.3171,
+                year: 1585,
+                type: "event"
+            },
+            {
+                name: "临海县",
+                event: "1585年返回临海",
+                lat: 28.8567,
+                lng: 121.1389,
+                year: 1585,
+                type: "event"
+            },
+            {
+                name: "温州府",
+                event: "1586年游温州",
+                lat: 27.9943,
+                lng: 120.6994,
+                year: 1586,
+                type: "event"
+            },
+            {
+                name: "金乡卫(苍南)",
+                event: "1586年考察金乡卫",
+                lat: 27.5183,
+                lng: 120.4256,
+                year: 1586,
+                type: "event"
+            },
+            {
+                name: "乐清县",
+                event: "1586年游乐清",
+                lat: 28.1129,
+                lng: 120.9866,
+                year: 1586,
+                type: "event"
+            },
+            {
+                name: "临海县",
+                event: "1586年再返临海",
+                lat: 28.8567,
+                lng: 121.1389,
+                year: 1586,
+                type: "event"
+            },
+            {
+                name: "南康府(庐山)",
+                event: "1586年游庐山",
+                lat: 29.4486,
+                lng: 115.9928,
+                year: 1586,
+                type: "event"
+            },
+            {
+                name: "延平府(武夷山)",
+                event: "1586年游武夷山",
+                lat: 27.7566,
+                lng: 118.0354,
+                year: 1586,
+                type: "event"
+            },
+            {
+                name: "明州府(四明山)",
+                event: "1586年游四明山",
+                lat: 29.8032,
+                lng: 121.0928,
+                year: 1586,
+                type: "event"
+            },
+            {
+                name: "乐清县(雁荡山)",
+                event: "1586年游雁荡山",
+                lat: 28.3658,
+                lng: 121.0589,
+                year: 1586,
+                type: "event"
+            },
+            {
+                name: "明州府(雪窦山)",
+                event: "1586年游雪窦山",
+                lat: 29.6994,
+                lng: 121.2276,
+                year: 1586,
+                type: "event"
+            },
+            {
+                name: "明州府(东钱湖)",
+                event: "1586年游东钱湖",
+                lat: 29.7894,
+                lng: 121.6489,
+                year: 1586,
+                type: "event"
+            },
+            {
+                name: "明州府(普陀)",
+                event: "1586年游普陀",
+                lat: 29.9856,
+                lng: 122.3869,
+                year: 1586,
+                type: "event"
+            },
+            {
+                name: "台州府(天台山)",
+                event: "1586年游天台山",
+                lat: 29.1714,
+                lng: 121.1053,
+                year: 1586,
+                type: "event"
+            },
+            {
+                name: "杭州府",
+                event: "1587年游杭州",
+                lat: 30.2500,
+                lng: 120.1615,
+                year: 1587,
+                type: "event"
+            },
+            {
+                name: "嘉兴府",
+                event: "1587年游嘉兴",
+                lat: 30.7539,
+                lng: 120.7585,
+                year: 1587,
+                type: "event"
+            },
+            {
+                name: "苏州府",
+                event: "1587年游苏州",
+                lat: 31.2989,
+                lng: 120.5853,
+                year: 1587,
+                type: "event"
+            },
+            {
+                name: "镇江府",
+                event: "1587年游镇江",
+                lat: 32.1879,
+                lng: 119.4258,
+                year: 1587,
+                type: "event"
+            },
+            {
+                name: "应天府(南京)",
+                event: "1587年游南京",
+                lat: 32.0415,
+                lng: 118.7674,
+                year: 1587,
+                type: "event"
+            },
+            {
+                name: "九华山",
+                event: "1587年游九华、白岳",
+                lat: 30.4820,
+                lng: 117.8091,
+                year: 1587,
+                type: "event"
+            }
+        ];
+
+        // 行程路线数据
+        var routes = [
+            {from: 0, to: 1, year: 1585, desc: "北京→滁州 南下"},
+            {from: 1, to: 2, year: 1585, desc: "滁州→临海 返乡"},
+            {from: 2, to: 3, year: 1586, desc: "临海→温州 考察"},
+            {from: 3, to: 4, year: 1586, desc: "温州→金乡卫 考察海防"},
+            {from: 4, to: 5, year: 1586, desc: "金乡卫→乐清 考察"},
+            {from: 5, to: 6, year: 1586, desc: "乐清→临海 返乡"},
+            {from: 6, to: 7, year: 1586, desc: "临海→庐山 游历"},
+            {from: 7, to: 8, year: 1586, desc: "庐山→武夷山 游历"},
+            {from: 8, to: 9, year: 1586, desc: "武夷山→四明山 游历"},
+            {from: 9, to: 10, year: 1586, desc: "四明山→雁荡山 游历"},
+            {from: 10, to: 11, year: 1586, desc: "雁荡山→雪窦山 游历"},
+            {from: 11, to: 12, year: 1586, desc: "雪窦山→东钱湖 游历"},
+            {from: 12, to: 13, year: 1586, desc: "东钱湖→普陀 游历"},
+            {from: 13, to: 14, year: 1586, desc: "普陀→天台山 游历"},
+            {from: 14, to: 15, year: 1587, desc: "天台山→杭州 游历"},
+            {from: 15, to: 16, year: 1587, desc: "杭州→嘉兴 游历"},
+            {from: 16, to: 17, year: 1587, desc: "嘉兴→苏州 游历"},
+            {from: 17, to: 18, year: 1587, desc: "苏州→镇江 游历"},
+            {from: 18, to: 19, year: 1587, desc: "镇江→南京 游历"},
+            {from: 19, to: 20, year: 1587, desc: "南京→九华山 游历"}
+        ];
+
+        // 存储所有标记和路线
+        var allMarkers = [];
+        var allRoutes = [];
+        var allLabels = [];
+
+        // 添加标记点和标签
+        function addMarkersAndRoutes() {
+            // 清除现有标记和路线
+            allMarkers.forEach(marker => map.removeLayer(marker));
+            allRoutes.forEach(route => map.removeLayer(route));
+            allLabels.forEach(label => map.removeLayer(label));
+            
+            allMarkers = [];
+            allRoutes = [];
+            allLabels = [];
+            
+            // 获取选中的年份
+            var selectedYears = [];
+            document.querySelectorAll('.year-checkbox:checked').forEach(function(checkbox) {
+                selectedYears.push(parseInt(checkbox.value));
+            });
+            
+            // 添加标记点
+            locations.forEach(function(loc) {
+                if (selectedYears.includes(loc.year)) {
+                    var marker = L.circleMarker([loc.lat, loc.lng], {
+                        className: 'event-marker',
+                        radius: 6
+                    }).addTo(map);
+                    
+                    allMarkers.push(marker);
+                    
+                    // 创建并添加文本标签
+                    var label = L.divIcon({
+                        className: 'location-label',
+                        html: `<strong>${loc.name.split('(')[0]}</strong><br>${loc.year}年<br>${loc.event.split('\n')[0]}`,
+                        iconSize: [100, 40]
+                    });
+                    
+                    var labelMarker = L.marker([loc.lat, loc.lng], {
+                        icon: label,
+                        zIndexOffset: 1000
+                    }).addTo(map);
+                    
+                    allLabels.push(labelMarker);
+                    
+                    // 添加完整信息的弹窗
+                    marker.bindPopup(`<b>${loc.name}</b><br>${loc.year}年<br>${loc.event.replace(/\n/g, '<br>')}`);
+                }
+            });
+            
+            // 绘制行程路线
+            routes.forEach(function(route) {
+                if (selectedYears.includes(route.year)) {
+                    var fromLoc = locations[route.from];
+                    var toLoc = locations[route.to];
+                    
+                    if (fromLoc && toLoc && selectedYears.includes(fromLoc.year) && selectedYears.includes(toLoc.year)) {
+                        var polyline = L.polyline(
+                            [[fromLoc.lat, fromLoc.lng], [toLoc.lat, toLoc.lng]],
+                            {
+                                color: '#ff8c00',
+                                weight: 2,
+                                opacity: 0.7,
+                                dashArray: '5, 5'
+                            }
+                        ).addTo(map);
+                        
+                        allRoutes.push(polyline);
+                        
+                        // 在路线中点添加年份标记
+                        var midLat = (fromLoc.lat + toLoc.lat) / 2;
+                        var midLng = (fromLoc.lng + toLoc.lng) / 2;
+                        
+                        var routeMarker = L.circleMarker([midLat, midLng], {
+                            className: 'route-marker',
+                            radius: 5
+                        }).addTo(map)
+                        .bindPopup(`<b>${route.year}年行程</b><br>${route.desc}`);
+                        
+                        allMarkers.push(routeMarker);
+                    }
+                }
+            });
+        }
+
+        // 初始添加标记和路线
+        addMarkersAndRoutes();
+
+        // 年份筛选事件
+        document.querySelectorAll('.year-checkbox').forEach(function(checkbox) {
+            checkbox.addEventListener('change', addMarkersAndRoutes);
+        });
+    </script>
+</body>
+</html>

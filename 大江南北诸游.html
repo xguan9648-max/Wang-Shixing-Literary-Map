@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>王士性《大江南北诸游》宦游纪行图 - 明代文化景观地图</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f1e8;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(to right, #3a5f7a, #5a8ca8);
+            color: #f5f1e8;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1000;
+        }
+        
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        
+        .header .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 1000px;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .map-container {
+            flex: 3;
+            min-width: 300px;
+            height: 650px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid #c9c0b0;
+        }
+        
+        #historical-map {
+            width: 100%;
+            height: 100%;
+            background-color: #e9e1d1;
+        }
+        
+        .info-panel {
+            flex: 2;
+            min-width: 300px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #c9c0b0;
+            max-height: 650px;
+            overflow-y: auto;
+        }
+        
+        .info-panel h2 {
+            color: #3a5f7a;
+            border-bottom: 2px solid #c9c0b0;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+        
+        .journey-info h3 {
+            color: #5a8ca8;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .journey-info .date {
+            color: #8b7355;
+            font-style: italic;
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+            background-color: #f0f4f8;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        
+        .journey-info .description {
+            background-color: #f9f5ed;
+            padding: 0.8rem;
+            border-radius: 6px;
+            border-left: 3px solid #8b7355;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+        
+        .journey-info .quote {
+            font-style: italic;
+            color: #5a4a3a;
+            padding: 0.5rem 0.8rem;
+            background-color: #f0ebe1;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin: 0.5rem 0;
+        }
+        
+        .highlight-box {
+            background-color: #e8f1f8;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border: 1px solid #b8d4e8;
+        }
+        
+        .highlight-box h4 {
+            color: #3a5f7a;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .timeline-container {
+            width: 100%;
+            margin-top: 2rem;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #c9c0b0;
+        }
+        
+        .timeline-container h2 {
+            color: #3a5f7a;
+            border-bottom: 2px solid #c9c0b0;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .timeline {
+            position: relative;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 1rem 0;
+        }
+        
+        .timeline::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 4px;
+            background-color: #8b7355;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+        
+        .timeline-item {
+            position: relative;
+            display: inline-block;
+            width: 16%;
+            text-align: center;
+            padding: 0.5rem;
+            z-index: 2;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .timeline-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .timeline-item.active {
+            transform: translateY(-5px);
+        }
+        
+        .timeline-item .year {
+            background-color: #3a5f7a;
+            color: white;
+            width: 60px;
+            height: 60px;
+            line-height: 60px;
+            border-radius: 50%;
+            margin: 0 auto 0.5rem;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .timeline-item.active .year {
+            background-color: #5a8ca8;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+        }
+        
+        .timeline-item .journey-name {
+            font-weight: bold;
+            color: #3a5f7a;
+            font-size: 1rem;
+            margin-bottom: 0.2rem;
+        }
+        
+        .timeline-item.active .journey-name {
+            color: #5a8ca8;
+        }
+        
+        .timeline-item .location {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .map-controls {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 6px;
+            background-color: #5a8ca8;
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn:hover {
+            background-color: #3a5f7a;
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid #5a8ca8;
+            color: #5a8ca8;
+        }
+        
+        .btn-outline:hover {
+            background-color: #5a8ca8;
+            color: white;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .legend-color {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            color: #666;
+            font-size: 0.9rem;
+            border-top: 1px solid #c9c0b0;
+        }
+        
+        .leaflet-popup-content {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            max-width: 300px;
+        }
+        
+        .leaflet-popup-content h3 {
+            color: #3a5f7a;
+            margin-bottom: 0.5rem;
+        }
+        
+        .leaflet-popup-content p {
+            margin-bottom: 0.5rem;
+        }
+        
+        .leaflet-popup-content .popup-date {
+            color: #8b7355;
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 1100px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .map-container, .info-panel {
+                width: 100%;
+            }
+            
+            .timeline-item {
+                width: 19%;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .timeline-item {
+                width: 100%;
+                display: block;
+                margin-bottom: 1.5rem;
+                text-align: left;
+                padding-left: 3rem;
+            }
+            
+            .timeline::after {
+                height: 100%;
+                width: 4px;
+                left: 1.5rem;
+                top: 0;
+                transform: none;
+            }
+            
+            .timeline-item .year {
+                position: absolute;
+                left: 0;
+                top: 50%;
+                transform: translateY(-50%);
+                margin: 0;
+                width: 50px;
+                height: 50px;
+                line-height: 50px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/3.32.1/minified.js"></script>
+
+    <style class="mobile-patch">
+        /* 移动端适配补丁 */
+        @media (max-width: 768px) {
+            .leaflet-control-container .leaflet-top { top: 10px; }
+            .leaflet-control-container .leaflet-bottom { bottom: 10px; }
+            .info-panel, .legend, .time-control {
+                max-width: 95% !important;
+                font-size: 12px;
+                left: 2.5% !important;
+                right: 2.5% !important;
+            }
+            .info-panel {
+                max-height: 30vh;
+                bottom: 0;
+                top: auto;
+                border-radius: 10px 10px 0 0;
+            }
+            h1 { font-size: 1.2rem !important; }
+            #map { height: 60vh !important; }
+        }
+    </style>
+
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>王士性《大江南北诸游》宦游纪行图</h1>
+            <div class="subtitle">
+                明代宦游文化景观地图（1581-1589）· 以公务为契机的地理考察与游历记录
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="controls">
+            <div class="map-controls">
+                <button id="journey-path-btn" class="btn">
+                    <i class="fas fa-route"></i> 显示宦游路线
+                </button>
+                <button id="toggle-base-btn" class="btn btn-outline">
+                    <i class="fas fa-layer-group"></i> 切换底图样式
+                </button>
+                <button id="reset-view-btn" class="btn btn-outline">
+                    <i class="fas fa-expand-arrows-alt"></i> 重置地图视图
+                </button>
+            </div>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #3a5f7a;"></div>
+                    <span>主要游历地点</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #8b7355;"></div>
+                    <span>宦游路线</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #5a8ca8;"></div>
+                    <span>关键城市</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #d4a55e;"></div>
+                    <span>公务节点</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="map-container">
+                <div id="historical-map"></div>
+            </div>
+            
+            <div class="info-panel">
+                <h2>王士性宦游历程记</h2>
+                
+                <div class="highlight-box">
+                    <h4>宦游特点</h4>
+                    <p>王士性以公务为契机，结合个人兴趣进行广泛的地理考察和游历，"遇佳山川而游"，充分体现了明代士人"宦游"的文化特征。</p>
+                </div>
+                
+                <div id="journey-details">
+                    <div class="journey-info" data-journey="songshan">
+                        <h3><i class="fas fa-mountain"></i> 游梁记·嵩山游 (1581)</h3>
+                        <div class="date">辛巳夏（1581年）</div>
+                        <div class="description">
+                            王士性任期满，六月从朗陵出发，开始游历河南嵩山等地的风景名胜，并完成《五岳游草·嵩山记》。此次游历标志其早期宦游的开始。
+                        </div>
+                        <div class="quote">"岁辛巳夏，余以秩满，例得代篆上伐阅，欲从斯行悉寻中州之胜而寓目焉"</div>
+                    </div>
+                    
+                    <div class="journey-info" data-journey="ximen">
+                        <h3><i class="fas fa-city"></i> 西山游记 (1588)</h3>
+                        <div class="date">戊子清明节（1588年）</div>
+                        <div class="description">
+                            王士性在戊子年转任吏科右给事中，与刘元承奉命典试四川，调任川北参议命，未上任，再任少仆太卿。此时趁为官的闲暇时刻出城游西山，其所见所闻记行。
+                        </div>
+                        <div class="quote">"戊子清明节，余给事礼垣，尝诣监理康陵祭，乃得乘兴归取间道一往云"</div>
+                    </div>
+                    
+                    <div class="journey-info" data-journey="qufu">
+                        <h3><i class="fas fa-temple"></i> 谒阙里记 (1588)</h3>
+                        <div class="date">万历十六年立春日（1588年）</div>
+                        <div class="description">
+                            王士性游山东曲阜孔庙时所写。此时正值丁忧期满回京复任期间，对儒家圣地的参谒反映了士人的精神追求。
+                        </div>
+                        <div class="quote">"时万历岁十有六立春日"</div>
+                    </div>
+                    
+                    <div class="journey-info" data-journey="chacheng">
+                        <h3><i class="fas fa-water"></i> 游茶城白云洞记 (1588)</h3>
+                        <div class="date">戊子二月九日（1588年）</div>
+                        <div class="description">
+                            王士性与詹牧父停舟问之，行十里至白云洞。这一年王士性的地理空间跨度较大，在赴任途中常常"遇佳山川而游"。
+                        </div>
+                        <div class="quote">"余以戊子二月九日与詹牧父停舟问之，得其下有白云洞，乃行十里而至"</div>
+                    </div>
+                    
+                    <div class="journey-info" data-journey="west">
+                        <h3><i class="fas fa-road"></i> 西征历·入蜀记 (1588-1589)</h3>
+                        <div class="date">1588-1589年</div>
+                        <div class="description">
+                            王士性与元承奉命入蜀时期，1588年任四川典试，1589年任广西参议，完成《入蜀稿》，此篇为回忆去年西行入蜀的记录。
+                        </div>
+                        <div class="quote">"元承曰：'是不可以无记'""按余与元承衔朝命而趋，以十三日乙丑也"</div>
+                    </div>
+                    
+                    <div class="journey-info" data-journey="summary">
+                        <h3><i class="fas fa-book"></i> 《大江南北诸游上》特点</h3>
+                        <div class="description">
+                            时空分期集中在1588年至1589年，恰好处于为母丁忧期满、回京复任、官位调动频繁时期。从晚年整理闲散手稿的角度来看，可能为回忆性质的记录。这一时期空间跨度较广，涉及较多不同为官途中的闲暇简短类型的游观记录。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="timeline-container">
+            <h2>宦游时间轴（1581-1589）</h2>
+            <div class="timeline">
+                <div class="timeline-item active" data-year="1581" data-journey="songshan">
+                    <div class="year">1581</div>
+                    <div class="journey-name">游梁记·嵩山</div>
+                    <div class="location">河南 · 任期满游历</div>
+                </div>
+                
+                <div class="timeline-item" data-year="1588a" data-journey="ximen">
+                    <div class="year">1588春</div>
+                    <div class="journey-name">西山游</div>
+                    <div class="location">京师附近 · 公务闲暇</div>
+                </div>
+                
+                <div class="timeline-item" data-year="1588b" data-journey="qufu">
+                    <div class="year">1588春</div>
+                    <div class="journey-name">谒阙里</div>
+                    <div class="location">山东曲阜 · 孔庙参谒</div>
+                </div>
+                
+                <div class="timeline-item" data-year="1588c" data-journey="chacheng">
+                    <div class="year">1588二月</div>
+                    <div class="journey-name">茶城白云洞</div>
+                    <div class="location">赴任途中 · 遇景而游</div>
+                </div>
+                
+                <div class="timeline-item" data-year="1588d" data-journey="west">
+                    <div class="year">1588-89</div>
+                    <div class="journey-name">西征入蜀</div>
+                    <div class="location">四川 · 奉命典试</div>
+                </div>
+                
+                <div class="timeline-item" data-year="1589" data-journey="west">
+                    <div class="year">1589</div>
+                    <div class="journey-name">《入蜀稿》</div>
+                    <div class="location">广西任上 · 回忆记录</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <div class="container">
+            本文化景观地图基于《大江南北诸游上》等文献记载还原王士性宦游历程 · 数据来源：历史文献与地理考证
+            <br>
+            设计理念：展现明代士人以公务为契机的地理考察与"遇佳山川而游"的宦游文化
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // 初始化地图
+        const map = L.map('historical-map').setView([34.0, 112.0], 5);
+        
+        // 添加底图（使用历史风格地图瓦片）
+        const historicalBasemap = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors, © CARTO',
+            maxZoom: 10,
+            minZoom: 4
+        }).addTo(map);
+        
+        // 备用底图（自然地形风格）
+        const terrainBasemap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenTopoMap contributors',
+            maxZoom: 10,
+            minZoom: 4
+        });
+        
+        // 主要游历地点数据
+        const journeys = {
+            songshan: { 
+                name: "嵩山游", 
+                coords: [34.48, 112.97], 
+                year: "1581年夏",
+                type: "mountain",
+                description: "王士性任期满，从朗陵出发游嵩山，完成《五岳游草·嵩山记》。标志其早期宦游的开始。",
+                quote: "岁辛巳夏，余以秩满，例得代篆上伐阅，欲从斯行悉寻中州之胜而寓目焉"
+            },
+            ximen: { 
+                name: "西山游", 
+                coords: [39.9, 116.1], 
+                year: "1588年清明节",
+                type: "city",
+                description: "王士性转任吏科右给事中期间，趁公务闲暇出城游西山，记录所见所闻。",
+                quote: "戊子清明节，余给事礼垣，尝诣监理康陵祭，乃得乘兴归取间道一往云"
+            },
+            qufu: { 
+                name: "谒阙里", 
+                coords: [35.60, 116.98], 
+                year: "1588年立春",
+                type: "temple",
+                description: "王士性游山东曲阜孔庙，反映了士人对儒家圣地的精神追求。",
+                quote: "时万历岁十有六立春日"
+            },
+            chacheng: { 
+                name: "茶城白云洞", 
+                coords: [32.90, 115.82], 
+                year: "1588年二月九日",
+                type: "cave",
+                description: "王士性与詹牧父赴任途中停舟游白云洞，体现其'遇佳山川而游'的特点。",
+                quote: "余以戊子二月九日与詹牧父停舟问之，得其下有白云洞，乃行十里而至"
+            },
+            west: { 
+                name: "西征入蜀", 
+                coords: [30.67, 104.07], 
+                year: "1588-1589年",
+                type: "journey",
+                description: "王士性与元承奉命入蜀典试，后回忆写成《入蜀稿》，记录了西行入蜀的经历。",
+                quote: "元承曰：'是不可以无记'按余与元承衔朝命而趋，以十三日乙丑也"
+            }
+        };
+        
+        // 关键城市坐标
+        const cities = {
+            beijing: { name: "京师", coords: [39.90, 116.40], type: "capital" },
+            langling: { name: "朗陵", coords: [32.80, 114.02], type: "departure" },
+            sichuan: { name: "四川", coords: [30.50, 104.50], type: "destination" },
+            guangxi: { name: "广西", coords: [23.80, 108.80], type: "destination" }
+        };
+        
+        // 公务节点
+        const officialPoints = {
+            exam_sichuan: { name: "典试四川", coords: [30.67, 104.07], year: "1588" },
+            transfer_guangxi: { name: "改任广西", coords: [24.50, 110.00], year: "1589" },
+            ritual_official: { name: "吏科给事中", coords: [39.90, 116.40], year: "1588" }
+        };
+        
+        // 宦游路线坐标
+        const journeyPaths = {
+            early: [ // 1581年路线
+                cities.langling.coords,
+                journeys.songshan.coords
+            ],
+            north: [ // 1588年北方路线
+                cities.beijing.coords,
+                journeys.ximen.coords,
+                journeys.qufu.coords
+            ],
+            central: [ // 1588年中原路线
+                journeys.qufu.coords,
+                journeys.chacheng.coords
+            ],
+            west: [ // 1588-1589年西行路线
+                cities.beijing.coords,
+                [35.0, 110.0],
+                journeys.west.coords,
+                [27.0, 108.0],
+                cities.guangxi.coords
+            ]
+        };
+        
+        // 图例颜色定义
+        const typeColors = {
+            mountain: "#3a5f7a",
+            city: "#3a5f7a",
+            temple: "#3a5f7a",
+            cave: "#3a5f7a",
+            journey: "#3a5f7a",
+            capital: "#5a8ca8",
+            departure: "#5a8ca8",
+            destination: "#5a8ca8",
+            official: "#d4a55e"
+        };
+        
+        // 添加主要游历地点标记
+        const journeyMarkers = {};
+        Object.keys(journeys).forEach(key => {
+            const journey = journeys[key];
+            const marker = L.circleMarker(journey.coords, {
+                color: typeColors[journey.type],
+                fillColor: typeColors[journey.type],
+                fillOpacity: 0.8,
+                radius: 10,
+                weight: 2
+            }).addTo(map);
+            
+            marker.bindPopup(`
+                <h3>${journey.name}</h3>
+                <p class="popup-date"><strong>时间：</strong>${journey.year}</p>
+                <p>${journey.description}</p>
+                <p><em>"${journey.quote}"</em></p>
+            `);
+            
+            journeyMarkers[key] = marker;
+            
+            // 添加文字标注
+            L.marker(journey.coords, {
+                icon: L.divIcon({
+                    className: 'journey-label',
+                    html: `<div style="font-weight:bold;color:${typeColors[journey.type]};text-shadow:1px 1px 2px white;">${journey.name}</div>`,
+                    iconSize: [80, 20],
+                    iconAnchor: [40, 0]
+                })
+            }).addTo(map);
+        });
+        
+        // 添加城市标记
+        Object.keys(cities).forEach(key => {
+            const city = cities[key];
+            L.circleMarker(city.coords, {
+                color: typeColors[city.type],
+                fillColor: typeColors[city.type],
+                fillOpacity: 0.7,
+                radius: 8,
+                weight: 2
+            }).addTo(map).bindPopup(`<strong>${city.name}</strong>`);
+            
+            // 添加城市文字标注
+            L.marker(city.coords, {
+                icon: L.divIcon({
+                    className: 'city-label',
+                    html: `<div style="color:${typeColors[city.type]};font-size:12px;text-shadow:1px 1px 2px white;">${city.name}</div>`,
+                    iconSize: [50, 15],
+                    iconAnchor: [25, 0]
+                })
+            }).addTo(map);
+        });
+        
+        // 添加公务节点标记
+        Object.keys(officialPoints).forEach(key => {
+            const point = officialPoints[key];
+            L.circleMarker(point.coords, {
+                color: typeColors.official,
+                fillColor: typeColors.official,
+                fillOpacity: 0.8,
+                radius: 7,
+                weight: 2
+            }).addTo(map).bindPopup(`<strong>${point.name}</strong><br>${point.year}年`);
+        });
+        
+        // 添加宦游路线
+        let journeyPathLayers = [];
+        
+        Object.keys(journeyPaths).forEach(key => {
+            const path = journeyPaths[key];
+            const layer = L.polyline(path, {
+                color: '#8b7355',
+                weight: 3,
+                opacity: 0.7,
+                dashArray: key === 'west' ? '10, 10' : '5, 5',
+                lineCap: 'round'
+            }).addTo(map);
+            
+            journeyPathLayers.push(layer);
+            
+            // 为西行路线添加箭头
+            if (key === 'west') {
+                L.polylineDecorator(path, {
+                    patterns: [
+                        {
+                            offset: '100%',
+                            repeat: 0,
+                            symbol: L.Symbol.arrowHead({
+                                pixelSize: 12,
+                                polygon: false,
+                                pathOptions: {
+                                    stroke: true,
+                                    color: '#8b7355',
+                                    weight: 2
+                                }
+                            })
+                        }
+                    ]
+                }).addTo(map);
+            }
+        });
+        
+        // 添加主要河流（简化表示）
+        const yellowRiver = [
+            [36.0, 116.0],
+            [35.0, 115.0],
+            [34.5, 113.5],
+            [34.5, 112.0],
+            [34.0, 110.5]
+        ];
+        
+        const yangtzeRiver = [
+            [31.0, 120.0],
+            [30.5, 117.0],
+            [30.0, 115.0],
+            [29.5, 113.0],
+            [29.0, 110.0]
+        ];
+        
+        L.polyline(yellowRiver, {
+            color: '#4a90e2',
+            weight: 2,
+            opacity: 0.5
+        }).addTo(map).bindPopup('黄河');
+        
+        L.polyline(yangtzeRiver, {
+            color: '#4a90e2',
+            weight: 2,
+            opacity: 0.5
+        }).addTo(map).bindPopup('长江');
+        
+        // 时间轴交互
+        document.querySelectorAll('.timeline-item').forEach(item => {
+            item.addEventListener('click', function() {
+                // 更新活跃状态
+                document.querySelectorAll('.timeline-item').forEach(i => {
+                    i.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // 获取对应的游历
+                const journeyKey = this.getAttribute('data-journey');
+                const journey = journeys[journeyKey];
+                
+                if (journey) {
+                    // 移动地图视图到该地点
+                    map.setView(journey.coords, 7);
+                    
+                    // 打开该地点的弹出信息
+                    journeyMarkers[journeyKey].openPopup();
+                    
+                    // 更新右侧信息面板
+                    document.querySelectorAll('.journey-info').forEach(info => {
+                        info.style.display = 'none';
+                    });
+                    document.querySelector(`.journey-info[data-journey="${journeyKey}"]`).style.display = 'block';
+                } else {
+                    // 如果是总结项，显示全部
+                    map.setView([34.0, 112.0], 5);
+                    
+                    document.querySelectorAll('.journey-info').forEach(info => {
+                        info.style.display = 'block';
+                    });
+                }
+            });
+        });
+        
+        // 按钮交互
+        let pathsVisible = true;
+        document.getElementById('journey-path-btn').addEventListener('click', function() {
+            if (pathsVisible) {
+                journeyPathLayers.forEach(layer => {
+                    map.removeLayer(layer);
+                });
+                this.innerHTML = '<i class="fas fa-route"></i> 显示宦游路线';
+                pathsVisible = false;
+            } else {
+                journeyPathLayers.forEach(layer => {
+                    layer.addTo(map);
+                });
+                this.innerHTML = '<i class="fas fa-route"></i> 隐藏宦游路线';
+                pathsVisible = true;
+            }
+        });
+        
+        let currentBasemap = 'historical';
+        document.getElementById('toggle-base-btn').addEventListener('click', function() {
+            if (currentBasemap === 'historical') {
+                map.removeLayer(historicalBasemap);
+                terrainBasemap.addTo(map);
+                currentBasemap = 'terrain';
+                this.innerHTML = '<i class="fas fa-layer-group"></i> 切换为历史底图';
+            } else {
+                map.removeLayer(terrainBasemap);
+                historicalBasemap.addTo(map);
+                currentBasemap = 'historical';
+                this.innerHTML = '<i class="fas fa-layer-group"></i> 切换为地形底图';
+            }
+        });
+        
+        document.getElementById('reset-view-btn').addEventListener('click', function() {
+            map.setView([34.0, 112.0], 5);
+        });
+        
+        // 右侧信息面板点击交互
+        document.querySelectorAll('.journey-info').forEach(info => {
+            info.addEventListener('click', function() {
+                const journeyKey = this.getAttribute('data-journey');
+                const journey = journeys[journeyKey];
+                
+                if (journey) {
+                    // 移动地图视图到该地点
+                    map.setView(journey.coords, 7);
+                    
+                    // 打开该地点的弹出信息
+                    journeyMarkers[journeyKey].openPopup();
+                    
+                    // 更新时间轴活跃状态
+                    document.querySelectorAll('.timeline-item').forEach(i => {
+                        i.classList.remove('active');
+                        if (i.getAttribute('data-journey') === journeyKey) {
+                            i.classList.add('active');
+                        }
+                    });
+                }
+            });
+        });
+        
+        // 初始化显示嵩山信息
+        document.querySelectorAll('.journey-info').forEach(info => {
+            if (info.getAttribute('data-journey') !== 'songshan') {
+                info.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

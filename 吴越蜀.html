@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>王士性《吴越蜀游》三卷宦游纪行图 - 明代文化景观地图</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f1e8;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c5f2c 0%, #3a7c5a 50%, #2c5f7a 100%);
+            color: #f5f1e8;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1000;
+        }
+        
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+        
+        .header .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 1000px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .volume-tabs {
+            display: flex;
+            justify-content: center;
+            margin-top: 1rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .volume-tab {
+            padding: 0.5rem 1.5rem;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .volume-tab:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .volume-tab.active {
+            background-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .map-container {
+            flex: 3;
+            min-width: 300px;
+            height: 650px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid #c9c0b0;
+        }
+        
+        #historical-map {
+            width: 100%;
+            height: 100%;
+            background-color: #e9e1d1;
+        }
+        
+        .info-panel {
+            flex: 2;
+            min-width: 300px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #c9c0b0;
+            max-height: 650px;
+            overflow-y: auto;
+        }
+        
+        .info-panel h2 {
+            color: #2c5f2c;
+            border-bottom: 2px solid #c9c0b0;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+        
+        .volume-info {
+            display: none;
+        }
+        
+        .volume-info.active {
+            display: block;
+        }
+        
+        .volume-info h3 {
+            color: #2c5f7a;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .volume-info .period {
+            color: #8b7355;
+            font-style: italic;
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+            background-color: #f0f4f8;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        
+        .volume-info .description {
+            background-color: #f9f5ed;
+            padding: 0.8rem;
+            border-radius: 6px;
+            border-left: 3px solid #8b7355;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+        
+        .volume-info .quote {
+            font-style: italic;
+            color: #5a4a3a;
+            padding: 0.5rem 0.8rem;
+            background-color: #f0ebe1;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin: 0.5rem 0;
+        }
+        
+        .location-list {
+            margin-top: 1rem;
+            padding-left: 1.5rem;
+        }
+        
+        .location-list li {
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+        
+        .timeline-container {
+            width: 100%;
+            margin-top: 2rem;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #c9c0b0;
+        }
+        
+        .timeline-container h2 {
+            color: #2c5f2c;
+            border-bottom: 2px solid #c9c0b0;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .timeline {
+            position: relative;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 1rem 0;
+        }
+        
+        .timeline::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 4px;
+            background-color: #8b7355;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+        
+        .timeline-item {
+            position: relative;
+            display: inline-block;
+            width: 20%;
+            text-align: center;
+            padding: 0.5rem;
+            z-index: 2;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .timeline-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .timeline-item.active {
+            transform: translateY(-5px);
+        }
+        
+        .timeline-item .year {
+            background-color: #3a7c5a;
+            color: white;
+            width: 55px;
+            height: 55px;
+            line-height: 55px;
+            border-radius: 50%;
+            margin: 0 auto 0.5rem;
+            font-weight: bold;
+            font-size: 1rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .timeline-item.active .year {
+            background-color: #2c5f7a;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+        }
+        
+        .timeline-item .volume-name {
+            font-weight: bold;
+            color: #3a7c5a;
+            font-size: 0.95rem;
+            margin-bottom: 0.2rem;
+        }
+        
+        .timeline-item.active .volume-name {
+            color: #2c5f7a;
+        }
+        
+        .timeline-item .period {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .map-controls {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 6px;
+            background-color: #3a7c5a;
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn:hover {
+            background-color: #2c5f2c;
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid #3a7c5a;
+            color: #3a7c5a;
+        }
+        
+        .btn-outline:hover {
+            background-color: #3a7c5a;
+            color: white;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .legend-color {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            color: #666;
+            font-size: 0.9rem;
+            border-top: 1px solid #c9c0b0;
+        }
+        
+        .leaflet-popup-content {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            max-width: 300px;
+        }
+        
+        .leaflet-popup-content h3 {
+            color: #2c5f2c;
+            margin-bottom: 0.5rem;
+        }
+        
+        .leaflet-popup-content p {
+            margin-bottom: 0.5rem;
+        }
+        
+        .leaflet-popup-content .popup-period {
+            color: #8b7355;
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 1100px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .map-container, .info-panel {
+                width: 100%;
+            }
+            
+            .timeline-item {
+                width: 19%;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .volume-tabs {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .volume-tab {
+                width: 80%;
+                text-align: center;
+            }
+            
+            .timeline-item {
+                width: 100%;
+                display: block;
+                margin-bottom: 1.5rem;
+                text-align: left;
+                padding-left: 3rem;
+            }
+            
+            .timeline::after {
+                height: 100%;
+                width: 4px;
+                left: 1.5rem;
+                top: 0;
+                transform: none;
+            }
+            
+            .timeline-item .year {
+                position: absolute;
+                left: 0;
+                top: 50%;
+                transform: translateY(-50%);
+                margin: 0;
+                width: 45px;
+                height: 45px;
+                line-height: 45px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/3.32.1/minified.js"></script>
+
+    <style class="mobile-patch">
+        /* 移动端适配补丁 */
+        @media (max-width: 768px) {
+            .leaflet-control-container .leaflet-top { top: 10px; }
+            .leaflet-control-container .leaflet-bottom { bottom: 10px; }
+            .info-panel, .legend, .time-control {
+                max-width: 95% !important;
+                font-size: 12px;
+                left: 2.5% !important;
+                right: 2.5% !important;
+            }
+            .info-panel {
+                max-height: 30vh;
+                bottom: 0;
+                top: auto;
+                border-radius: 10px 10px 0 0;
+            }
+            h1 { font-size: 1.2rem !important; }
+            #map { height: 60vh !important; }
+        }
+    </style>
+
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>王士性《吴越蜀游》三卷宦游纪行图</h1>
+            <div class="subtitle">
+                明代士人求学、丁忧与宦游时期的文化景观地图 · 展现江南、越地与蜀中的地理认知与情感记忆
+            </div>
+            
+            <div class="volume-tabs">
+                <div class="volume-tab active" data-volume="wu">《吴游上》卷</div>
+                <div class="volume-tab" data-volume="yue">《越游上》卷</div>
+                <div class="volume-tab" data-volume="shu">《蜀游上》卷</div>
+                <div class="volume-tab" data-volume="all">综合视图</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="controls">
+            <div class="map-controls">
+                <button id="journey-path-btn" class="btn">
+                    <i class="fas fa-route"></i> 显示游历路线
+                </button>
+                <button id="toggle-volume-btn" class="btn btn-outline">
+                    <i class="fas fa-eye"></i> 切换卷册显示
+                </button>
+                <button id="reset-view-btn" class="btn btn-outline">
+                    <i class="fas fa-expand-arrows-alt"></i> 重置地图视图
+                </button>
+            </div>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #2c5f2c;"></div>
+                    <span>《吴游上》地点</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #3a7c5a;"></div>
+                    <span>《越游上》地点</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #2c5f7a;"></div>
+                    <span>《蜀游上》地点</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #8b7355;"></div>
+                    <span>游历路线</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="map-container">
+                <div id="historical-map"></div>
+            </div>
+            
+            <div class="info-panel">
+                <div class="volume-info active" id="wu-info">
+                    <h2>《吴游上》卷 · 江南游历</h2>
+                    <div class="period">求学应试、丁忧及南京鸿胪寺闲职时期</div>
+                    
+                    <div class="description">
+                        《吴游上》卷包括《吴游纪行》和《游武林湖山六记》，主要写于王士性早年求学应试时期、中进士后正式为官前，以及回乡为母丁忧期间。少年游总是给人留下美好回忆，尤其是晚年王士性因仕途机缘巧合而获得了故地重游的机会，因此对吴地山水等江南美景别具情感。
+                    </div>
+                    
+                    <h3><i class="fas fa-map-marked-alt"></i> 《吴游纪行》主要游历地点</h3>
+                    <ul class="location-list">
+                        <li><strong>四月望日</strong>：烟雨楼</li>
+                        <li><strong>望后五日</strong>：虎丘、太湖</li>
+                        <li><strong>望后十日</strong>：慧山泉</li>
+                        <li><strong>午日</strong>：金山</li>
+                        <li><strong>五月望日</strong>：采石</li>
+                        <li><strong>望后一日</strong>：谢家青山</li>
+                        <li><strong>望后十日</strong>：九华山</li>
+                    </ul>
+                    
+                    <h3><i class="fas fa-city"></i> 《留都述游》·南京</h3>
+                    <div class="description">
+                        留都指的是明朝两京制度下的南京，王士性晚年在南京鸿胪寺任闲职时有大量的时间游览、考察南京的历史文化、风景名胜，又是其仕途急转而下的落脚点，又离其家乡越地不远，对王士性来说应该是意义非凡的。
+                    </div>
+                    <div class="quote">记述景点：鸡鸣山、阅江楼、太平堤、玄武湖、无梁殿、牛首山、献花岩、燕子矶、观音岩等</div>
+                    
+                    <h3><i class="fas fa-lake"></i> 《游武林湖山六记》·西湖</h3>
+                    <div class="description">
+                        创作于王士性的士人时期，具有较为明显的文人游记气质，文笔极具诗情画意，比如论及西湖"晴雨雪月，无不宜者"，同时也体现出王士性作为官员独到的考察眼光初现，比如从经济角度看西湖发展。
+                    </div>
+                    <div class="quote">游览路线：出涌金门、过孤山、至岳坟；出清波门、游湖南诸山、至六和塔；出钱塘门、观戒坛、至灵隐、上三天竺；再出清波门至六和塔望潮；遍游西湖后登吴山、白岳山。</div>
+                </div>
+                
+                <div class="volume-info" id="yue-info">
+                    <h2>《越游上》卷 · 越地游历</h2>
+                    <div class="period">少年时期和为母丁忧时期（1573-1577年，1585-1588年）</div>
+                    
+                    <div class="description">
+                        《越游上》较为系统地讲述越地形胜，主要集中于王士性少年时期和为母丁忧时期，得闲实现了遍游越地的向往，因此对越地的著述体现出更加客观、系统的特点，以行迹、路线记录为主，较少第一人称的主观介入。
+                    </div>
+                    
+                    <h3><i class="fas fa-book"></i> 《越游注》·两个时期</h3>
+                    <div class="description">
+                        <strong>考学期间（1573-1577年）</strong>：带着极大的人文关怀分别游览了金华、温州等地的多处山川胜景<br>
+                        <strong>为母丁忧期间（1585-1588年）</strong>：带着独特的地理考察视角游历了宁绍地区、金华、温州等地，在一路游历回到台州
+                    </div>
+                    
+                    <h3><i class="fas fa-mountain"></i> 《入天台山志》</h3>
+                    <div class="description">
+                        以王士性的行迹路线为线索，对天台山的观察细致入微，一路见闻描绘极富诗情画意，属于文学性较强的游记作品。
+                    </div>
+                    
+                    <h3><i class="fas fa-mountain"></i> 《游雁宕记》</h3>
+                    <div class="description">
+                        以总分式的结构，较为全面展现了雁荡山奇峰各异的特点，其中许多仍旧是现代旅游的著名景点。
+                    </div>
+                    
+                    <h3><i class="fas fa-landmark"></i> 《台中山水可游者记》</h3>
+                    <div class="description">
+                        记录了台州城郡部分可游的佳山奇水，言简意赅、词意肯切，譬如东湖、灵峰寺，相对位置及可观之景记录清晰。
+                    </div>
+                </div>
+                
+                <div class="volume-info" id="shu-info">
+                    <h2>《蜀游上》卷 · 蜀中游历</h2>
+                    <div class="period">1588-1589年入蜀时期</div>
+                    
+                    <div class="description">
+                        《蜀游上》包括三篇《入蜀记》和一篇《游峨眉山记》，记录了王士性奉命入蜀典试及游历的完整经历。
+                    </div>
+                    
+                    <h3><i class="fas fa-road"></i> 《入蜀记》上、中、下篇</h3>
+                    <div class="description">
+                        引经据典，考察蜀都益州天府之形胜，以王士性入蜀的行迹为线索，以时间日期作为参照，其所行距离清晰可见。
+                    </div>
+                    <ul class="location-list">
+                        <li><strong>上篇</strong>：以入成都为界前的行程</li>
+                        <li><strong>中篇</strong>：在云锦城各日见闻</li>
+                        <li><strong>下篇</strong>：与好友沿长江出城游玩的行程见闻，时间、地点明确，展现了一条完整的蜀中行迹路线</li>
+                    </ul>
+                    
+                    <h3><i class="fas fa-mountain"></i> 《游峨眉山记》</h3>
+                    <div class="description">
+                        记录了万历戊子年（1588）王士性与好友元承秋后时节登山，不顾佛光可见的机会渺茫仍执意前往的旅途，有幸得见佛光，不虚此行，其中夹杂诸多高山自然地理现象，亦不失其文学色彩。
+                    </div>
+                    <div class="quote">"秋后时节登山，有幸得见佛光，不虚此行"</div>
+                </div>
+                
+                <div class="volume-info" id="all-info">
+                    <h2>三卷综合 · 王士性游历特点</h2>
+                    
+                    <h3><i class="fas fa-user-graduate"></i> 士人时期特点</h3>
+                    <div class="description">
+                        <strong>《吴游上》</strong>：求学应试时期，文人游记气质浓厚，诗情画意<br>
+                        <strong>《越游上》</strong>：少年游历与丁忧时期，系统客观的地理考察<br>
+                        共同特点：少年游历留下美好回忆，晚年故地重游情感深厚
+                    </div>
+                    
+                    <h3><i class="fas fa-user-tie"></i> 官员时期特点</h3>
+                    <div class="description">
+                        <strong>《蜀游上》</strong>：奉命入蜀典试，公务与游历结合<br>
+                        <strong>《留都述游》</strong>：南京鸿胪寺闲职时期，深入考察历史文化<br>
+                        共同特点：以公务为契机，结合个人兴趣进行地理考察
+                    </div>
+                    
+                    <h3><i class="fas fa-pen-fancy"></i> 文学与地理学结合</h3>
+                    <div class="description">
+                        王士性的游记既有文学性的诗情画意（如《游武林湖山六记》），又有系统客观的地理考察（如《越游上》），还有引经据典的历史考证（如《入蜀记》），体现了明代士人"读万卷书，行万里路"的学术传统。
+                    </div>
+                    
+                    <h3><i class="fas fa-map-signs"></i> 时空分布特征</h3>
+                    <div class="description">
+                        <strong>时间跨度</strong>：1573-1589年，涵盖求学、丁忧、为官各时期<br>
+                        <strong>空间范围</strong>：江南吴地、浙江越地、四川蜀地，覆盖明代重要文化区域<br>
+                        <strong>情感脉络</strong>：从少年意气到晚年沉思，从单纯游赏到系统考察
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="timeline-container">
+            <h2>三卷时空脉络（1573-1589）</h2>
+            <div class="timeline">
+                <div class="timeline-item active" data-year="1573" data-volume="yue">
+                    <div class="year">1573</div>
+                    <div class="volume-name">《越游》始</div>
+                    <div class="period">考学游历开始</div>
+                </div>
+                
+                <div class="timeline-item" data-year="1577" data-volume="yue">
+                    <div class="year">1577</div>
+                    <div class="volume-name">《越游》盛</div>
+                    <div class="period">考学游历高峰</div>
+                </div>
+                
+                <div class="timeline-item" data-year="1581" data-volume="wu">
+                    <div class="year">1581</div>
+                    <div class="volume-name">《吴游》盛</div>
+                    <div class="period">求学应试游历</div>
+                </div>
+                
+                <div class="timeline-item" data-year="1585" data-volume="yue">
+                    <div class="year">1585</div>
+                    <div class="volume-name">《越游》续</div>
+                    <div class="period">丁忧期间游历</div>
+                </div>
+                
+                <div class="timeline-item" data-year="1588" data-volume="all">
+                    <div class="year">1588</div>
+                    <div class="volume-name">三卷交汇</div>
+                    <div class="period">蜀、吴、越游集中</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <div class="container">
+            本文化景观地图基于《吴游上》、《越游上》、《蜀游上》三卷文献记载还原王士性游历历程 · 数据来源：历史文献与地理考证
+            <br>
+            设计理念：展现明代士人从求学、丁忧到为官各时期的游历特点与地理认知发展
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // 初始化地图
+        const map = L.map('historical-map').setView([30.0, 115.0], 6);
+        
+        // 添加底图
+        const historicalBasemap = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors, © CARTO',
+            maxZoom: 10,
+            minZoom: 4
+        }).addTo(map);
+        
+        // 备用底图
+        const terrainBasemap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenTopoMap contributors',
+            maxZoom: 10,
+            minZoom: 4
+        });
+        
+        // 三卷地点数据
+        const locations = {
+            // 《吴游上》地点
+            wu: {
+                yanyulou: { name: "烟雨楼", coords: [30.75, 120.73], type: "building", volume: "wu", description: "四月望日游烟雨楼" },
+                huqiu: { name: "虎丘", coords: [31.33, 120.57], type: "mountain", volume: "wu", description: "望后五日游虎丘" },
+                taihu: { name: "太湖", coords: [31.20, 120.15], type: "lake", volume: "wu", description: "望后五日游太湖" },
+                huishanquan: { name: "慧山泉", coords: [31.58, 120.25], type: "spring", volume: "wu", description: "望后十日游慧山泉" },
+                jinshan: { name: "金山", coords: [32.22, 119.43], type: "mountain", volume: "wu", description: "午日游金山" },
+                caishi: { name: "采石", coords: [31.57, 118.48], type: "mountain", volume: "wu", description: "五月望日游采石" },
+                xiejiashan: { name: "谢家青山", coords: [31.45, 119.48], type: "mountain", volume: "wu", description: "望后一日游谢家青山" },
+                jiuhuashan: { name: "九华山", coords: [30.47, 117.80], type: "mountain", volume: "wu", description: "望后十日游九华山" },
+                
+                // 南京景点
+                nanjing: { name: "南京", coords: [32.06, 118.78], type: "city", volume: "wu", description: "留都南京，鸿胪寺闲职时期游览" },
+                jimingshan: { name: "鸡鸣山", coords: [32.07, 118.80], type: "mountain", volume: "wu", description: "南京名胜" },
+                xuanwuhu: { name: "玄武湖", coords: [32.08, 118.79], type: "lake", volume: "wu", description: "南京名胜" },
+                yanziji: { name: "燕子矶", coords: [32.15, 118.80], type: "cliff", volume: "wu", description: "南京名胜" },
+                
+                // 西湖景点
+                westlake: { name: "西湖", coords: [30.25, 120.13], type: "lake", volume: "wu", description: "游武林湖山六记，晴雨雪月无不宜者" },
+                gushan: { name: "孤山", coords: [30.25, 120.14], type: "mountain", volume: "wu", description: "出涌金门、过孤山、至岳坟" },
+                liuheta: { name: "六和塔", coords: [30.20, 120.13], type: "tower", volume: "wu", description: "出清波门、游湖南诸山、至六和塔" },
+                lingyin: { name: "灵隐", coords: [30.24, 120.10], type: "temple", volume: "wu", description: "出钱塘门、观戒坛、至灵隐、上三天竺" },
+                wushan: { name: "吴山", coords: [30.24, 120.16], type: "mountain", volume: "wu", description: "遍游西湖后登吴山、白岳山" }
+            },
+            
+            // 《越游上》地点
+            yue: {
+                jinhua: { name: "金华", coords: [29.08, 119.65], type: "city", volume: "yue", description: "考学期间游览，带着人文关怀" },
+                wenzhou: { name: "温州", coords: [28.00, 120.70], type: "city", volume: "yue", description: "考学期间游览多处山川胜景" },
+                ningshao: { name: "宁绍地区", coords: [29.87, 121.55], type: "region", volume: "yue", description: "为官后带着地理考察视角游历" },
+                tiantaishan: { name: "天台山", coords: [29.17, 121.05], type: "mountain", volume: "yue", description: "《入天台山志》，观察细致入微，极富诗情画意" },
+                yandangshan: { name: "雁荡山", coords: [28.37, 121.08], type: "mountain", volume: "yue", description: "《游雁宕记》，全面展现奇峰各异的特点" },
+                taizhou: { name: "台州", coords: [28.66, 121.42], type: "city", volume: "yue", description: "《台中山水可游者记》，记录台州城郡佳山奇水" },
+                donghu: { name: "东湖", coords: [28.65, 121.42], type: "lake", volume: "yue", description: "台州名胜" },
+                lingfengsi: { name: "灵峰寺", coords: [28.37, 121.12], type: "temple", volume: "yue", description: "雁荡山著名景点" }
+            },
+            
+            // 《蜀游上》地点
+            shu: {
+                chengdu: { name: "成都", coords: [30.67, 104.07], type: "city", volume: "shu", description: "《入蜀记》中篇，云锦城各日见闻" },
+                yunjincheng: { name: "云锦城", coords: [30.65, 104.05], type: "city", volume: "shu", description: "在云锦城各日见闻" },
+                emeishan: { name: "峨眉山", coords: [29.53, 103.33], type: "mountain", volume: "shu", description: "《游峨眉山记》，万历戊子年（1588）秋后登山，有幸得见佛光" },
+                yangtze_river: { name: "长江蜀段", coords: [30.50, 107.50], type: "river", volume: "shu", description: "与好友沿长江出城游玩，展现完整蜀中行迹路线" },
+                yuzhang: { name: "益州", coords: [30.67, 104.07], type: "region", volume: "shu", description: "《入蜀记》上篇，考察蜀都益州天府之形胜" }
+            }
+        };
+        
+        // 卷册颜色
+        const volumeColors = {
+            wu: "#2c5f2c",
+            yue: "#3a7c5a",
+            shu: "#2c5f7a"
+        };
+        
+        // 地点类型图标
+        const typeIcons = {
+            mountain: "fa-mountain",
+            city: "fa-city",
+            lake: "fa-water",
+            river: "fa-water",
+            building: "fa-building",
+            temple: "fa-temple",
+            spring: "fa-tint",
+            cliff: "fa-mountain",
+            tower: "fa-tower",
+            region: "fa-map",
+            cliff: "fa-mountain"
+        };
+        
+        // 存储标记和路线层
+        let markers = {};
+        let routeLayers = { wu: null, yue: null, shu: null };
+        let currentVisibleVolume = 'wu';
+        
+        // 初始化所有标记
+        function initMarkers() {
+            // 清除现有标记
+            Object.values(markers).forEach(marker => {
+                if (marker) map.removeLayer(marker);
+            });
+            markers = {};
+            
+            // 添加当前卷册的标记
+            Object.keys(locations).forEach(volumeKey => {
+                Object.keys(locations[volumeKey]).forEach(locKey => {
+                    const location = locations[volumeKey][locKey];
+                    
+                    // 只显示当前卷册或全部
+                    if (currentVisibleVolume === 'all' || currentVisibleVolume === volumeKey) {
+                        const marker = L.circleMarker(location.coords, {
+                            color: volumeColors[location.volume],
+                            fillColor: volumeColors[location.volume],
+                            fillOpacity: 0.8,
+                            radius: 9,
+                            weight: 2
+                        }).addTo(map);
+                        
+                        marker.bindPopup(`
+                            <h3>${location.name}</h3>
+                            <p class="popup-period"><strong>卷册：</strong>${getVolumeName(location.volume)}</p>
+                            <p>${location.description}</p>
+                        `);
+                        
+                        markers[`${volumeKey}_${locKey}`] = marker;
+                        
+                        // 添加文字标注（只对重要地点）
+                        if (['nanjing', 'westlake', 'tiantaishan', 'yandangshan', 'chengdu', 'emeishan'].includes(locKey)) {
+                            L.marker(location.coords, {
+                                icon: L.divIcon({
+                                    className: 'location-label',
+                                    html: `<div style="font-weight:bold;color:${volumeColors[location.volume]};text-shadow:1px 1px 2px white;font-size:12px;">${location.name}</div>`,
+                                    iconSize: [70, 20],
+                                    iconAnchor: [35, 0]
+                                })
+                            }).addTo(map);
+                        }
+                    }
+                });
+            });
+        }
+        
+        // 初始化路线
+        function initRoutes() {
+            // 清除现有路线
+            Object.values(routeLayers).forEach(layer => {
+                if (layer) map.removeLayer(layer);
+            });
+            
+            // 定义各卷册的路线
+            const routes = {
+                wu: [
+                    locations.wu.yanyulou.coords,
+                    locations.wu.huqiu.coords,
+                    locations.wu.taihu.coords,
+                    locations.wu.huishanquan.coords,
+                    locations.wu.jinshan.coords,
+                    locations.wu.caishi.coords,
+                    locations.wu.xiejiashan.coords,
+                    locations.wu.jiuhuashan.coords,
+                    locations.wu.nanjing.coords,
+                    locations.wu.westlake.coords
+                ],
+                yue: [
+                    locations.yue.jinhua.coords,
+                    locations.yue.wenzhou.coords,
+                    locations.yue.ningshao.coords,
+                    locations.yue.tiantaishan.coords,
+                    locations.yue.yandangshan.coords,
+                    locations.yue.taizhou.coords
+                ],
+                shu: [
+                    [31.0, 112.0], // 入蜀起点
+                    locations.shu.chengdu.coords,
+                    locations.shu.emeishan.coords,
+                    locations.shu.yangtze_river.coords
+                ]
+            };
+            
+            // 添加当前卷册的路线
+            if (currentVisibleVolume === 'all') {
+                // 显示所有路线
+                Object.keys(routes).forEach(volumeKey => {
+                    const color = volumeColors[volumeKey];
+                    routeLayers[volumeKey] = L.polyline(routes[volumeKey], {
+                        color: color,
+                        weight: 3,
+                        opacity: 0.7,
+                        dashArray: '8, 8',
+                        lineCap: 'round'
+                    }).addTo(map);
+                });
+            } else if (routes[currentVisibleVolume]) {
+                // 显示当前卷册路线
+                const color = volumeColors[currentVisibleVolume];
+                routeLayers[currentVisibleVolume] = L.polyline(routes[currentVisibleVolume], {
+                    color: color,
+                    weight: 4,
+                    opacity: 0.8,
+                    dashArray: '10, 10',
+                    lineCap: 'round'
+                }).addTo(map);
+            }
+        }
+        
+        // 获取卷册名称
+        function getVolumeName(volumeKey) {
+            switch(volumeKey) {
+                case 'wu': return '《吴游上》卷';
+                case 'yue': return '《越游上》卷';
+                case 'shu': return '《蜀游上》卷';
+                default: return '';
+            }
+        }
+        
+        // 卷册选项卡交互
+        document.querySelectorAll('.volume-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // 更新选项卡状态
+                document.querySelectorAll('.volume-tab').forEach(t => {
+                    t.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // 更新信息面板
+                const volume = this.getAttribute('data-volume');
+                document.querySelectorAll('.volume-info').forEach(info => {
+                    info.classList.remove('active');
+                });
+                document.getElementById(`${volume}-info`).classList.add('active');
+                
+                // 更新地图显示
+                currentVisibleVolume = volume;
+                initMarkers();
+                initRoutes();
+                
+                // 调整地图视图
+                switch(volume) {
+                    case 'wu':
+                        map.setView([31.0, 119.0], 7);
+                        break;
+                    case 'yue':
+                        map.setView([29.0, 120.5], 7);
+                        break;
+                    case 'shu':
+                        map.setView([30.0, 104.0], 7);
+                        break;
+                    case 'all':
+                        map.setView([30.0, 112.0], 5);
+                        break;
+                }
+            });
+        });
+        
+        // 时间轴交互
+        document.querySelectorAll('.timeline-item').forEach(item => {
+            item.addEventListener('click', function() {
+                // 更新活跃状态
+                document.querySelectorAll('.timeline-item').forEach(i => {
+                    i.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // 获取对应的卷册
+                const volume = this.getAttribute('data-volume');
+                
+                // 切换到对应卷册
+                document.querySelectorAll('.volume-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                    if (tab.getAttribute('data-volume') === volume || volume === 'all') {
+                        if (volume === 'all') {
+                            document.querySelector('.volume-tab[data-volume="all"]').classList.add('active');
+                            document.querySelectorAll('.volume-info').forEach(info => {
+                                info.classList.remove('active');
+                            });
+                            document.getElementById('all-info').classList.add('active');
+                        } else {
+                            tab.classList.add('active');
+                            document.querySelectorAll('.volume-info').forEach(info => {
+                                info.classList.remove('active');
+                            });
+                            document.getElementById(`${volume}-info`).classList.add('active');
+                        }
+                    }
+                });
+                
+                // 更新地图显示
+                if (volume === 'all') {
+                    currentVisibleVolume = 'all';
+                } else {
+                    currentVisibleVolume = volume;
+                }
+                initMarkers();
+                initRoutes();
+                
+                // 调整地图视图
+                if (volume === 'all') {
+                    map.setView([30.0, 112.0], 5);
+                } else {
+                    switch(volume) {
+                        case 'wu':
+                            map.setView([31.0, 119.0], 7);
+                            break;
+                        case 'yue':
+                            map.setView([29.0, 120.5], 7);
+                            break;
+                        case 'shu':
+                            map.setView([30.0, 104.0], 7);
+                            break;
+                    }
+                }
+            });
+        });
+        
+        // 按钮交互
+        let routesVisible = true;
+        document.getElementById('journey-path-btn').addEventListener('click', function() {
+            if (routesVisible) {
+                Object.values(routeLayers).forEach(layer => {
+                    if (layer) map.removeLayer(layer);
+                });
+                this.innerHTML = '<i class="fas fa-route"></i> 显示游历路线';
+                routesVisible = false;
+            } else {
+                initRoutes();
+                this.innerHTML = '<i class="fas fa-route"></i> 隐藏游历路线';
+                routesVisible = true;
+            }
+        });
+        
+        document.getElementById('toggle-volume-btn').addEventListener('click', function() {
+            // 循环切换卷册显示
+            const volumes = ['wu', 'yue', 'shu', 'all'];
+            const currentIndex = volumes.indexOf(currentVisibleVolume);
+            const nextIndex = (currentIndex + 1) % volumes.length;
+            const nextVolume = volumes[nextIndex];
+            
+            // 触发对应卷册的点击事件
+            document.querySelector(`.volume-tab[data-volume="${nextVolume}"]`).click();
+        });
+        
+        document.getElementById('reset-view-btn').addEventListener('click', function() {
+            map.setView([30.0, 115.0], 6);
+        });
+        
+        // 初始化标记和路线
+        initMarkers();
+        initRoutes();
+        
+        // 添加主要河流
+        const yangtzeRiver = [
+            [31.0, 120.0],
+            [30.5, 117.0],
+            [30.0, 115.0],
+            [29.5, 112.0],
+            [29.0, 108.0],
+            [28.5, 105.0]
+        ];
+        
+        L.polyline(yangtzeRiver, {
+            color: '#4a90e2',
+            weight: 2,
+            opacity: 0.5
+        }).addTo(map).bindPopup('长江');
+        
+        // 添加主要湖泊
+        const westLake = L.circle([30.25, 120.13], {
+            color: '#4a90e2',
+            fillColor: '#4a90e2',
+            fillOpacity: 0.3,
+            radius: 3000
+        }).addTo(map).bindPopup('西湖');
+        
+        const taiHu = L.circle([31.20, 120.15], {
+            color: '#4a90e2',
+            fillColor: '#4a90e2',
+            fillOpacity: 0.3,
+            radius: 15000
+        }).addTo(map).bindPopup('太湖');
+    </script>
+</body>
+</html>

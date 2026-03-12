@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>明代文人行迹图 (1547-1598)</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.timedimension@1.1.1/dist/leaflet.timedimension.control.min.css" />
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+        h1 { text-align: center; color: #333; }
+        #map { height: 600px; width: 100%; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+        .info-panel { background: white; padding: 15px; border-radius: 5px; box-shadow: 0 1px 5px rgba(0,0,0,0.2); margin-bottom: 15px; }
+        .time-control { padding: 10px; background: white; border-radius: 5px; box-shadow: 0 1px 5px rgba(0,0,0,0.2); }
+        .year-slider { width: 100%; margin: 10px 0; }
+        #year-display { font-weight: bold; text-align: center; font-size: 1.2em; margin: 10px 0; }
+        .event-popup { max-width: 300px; }
+        .event-popup b { color: #2c3e50; }
+        .legend { line-height: 1.5; }
+        .legend i { width: 18px; height: 18px; float: left; margin-right: 8px; opacity: 0.7; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/3.32.1/minified.js"></script>
+
+    <style class="mobile-patch">
+        /* 移动端适配补丁 */
+        @media (max-width: 768px) {
+            .leaflet-control-container .leaflet-top { top: 10px; }
+            .leaflet-control-container .leaflet-bottom { bottom: 10px; }
+            .info-panel, .legend, .time-control {
+                max-width: 95% !important;
+                font-size: 12px;
+                left: 2.5% !important;
+                right: 2.5% !important;
+            }
+            .info-panel {
+                max-height: 30vh;
+                bottom: 0;
+                top: auto;
+                border-radius: 10px 10px 0 0;
+            }
+            h1 { font-size: 1.2rem !important; }
+            #map { height: 60vh !important; }
+        }
+    </style>
+
+</head>
+<body>
+    <h1>明代文人行迹图 (1547-1598)</h1>
+    <div class="info-panel">
+        <p>本地图展示明代文人从1547年至1598年的行迹路线。使用下方滑块可查看不同年份的行程，点击标记查看详细信息。</p>
+        <div id="year-display">年份：1547年</div>
+        <input type="range" id="year-slider" class="year-slider" min="1547" max="1598" value="1547" step="1">
+    </div>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/iso8601-js-period@0.2.1/iso8601.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.timedimension@1.1.1/dist/leaflet.timedimension.min.js"></script>
+    <script>
+        // 1. 初始化地图（聚焦中国）
+        const map = L.map('map').setView([35, 110], 5);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+        // 2. 完整的行迹数据（仅使用公元纪年）
+        const travelData = [
+            {year: 1547, location: "临海", modern_name: "浙江省台州市临海市", lat: 28.8567, lng: 121.1389, event: "出生"},
+            {year: 1569, location: "杭州", modern_name: "浙江省杭州市", lat: 30.2741, lng: 120.1551, event: "游学"},
+            {year: 1571, location: "南京", modern_name: "江苏省南京市", lat: 32.0603, lng: 118.7969, event: ""},
+            {year: 1574, location: "金华", modern_name: "浙江省金华市", lat: 29.0781, lng: 119.6474, event: ""},
+            {year: 1574, location: "南京", modern_name: "江苏省南京市", lat: 32.0603, lng: 118.7969, event: ""},
+            {year: 1576, location: "缙云", modern_name: "浙江省丽水市缙云县", lat: 28.6593, lng: 120.0919, event: ""},
+            {year: 1576, location: "丽水", modern_name: "浙江省丽水市", lat: 28.4676, lng: 119.9227, event: ""},
+            {year: 1576, location: "青田", modern_name: "浙江省丽水市青田县", lat: 28.1399, lng: 120.2826, event: ""},
+            {year: 1578, location: "杭州", modern_name: "浙江省杭州市", lat: 30.2741, lng: 120.1551, event: "作《游武林湖山六记》"},
+            {year: 1578, location: "京都", modern_name: "北京市", lat: 39.9042, lng: 116.4074, event: ""},
+            {year: 1578, location: "河南确山县", modern_name: "河南省驻马店市确山县", lat: 32.8016, lng: 114.0265, event: ""},
+            {year: 1579, location: "河南确山", modern_name: "河南省驻马店市确山县", lat: 32.8016, lng: 114.0265, event: "作《横山烈妇祠记》"},
+            {year: 1581, location: "河南嵩山", modern_name: "河南省登封市", lat: 34.4840, lng: 113.0366, event: "作《嵩山记》《游梁记》"},
+            {year: 1583, location: "京城", modern_name: "北京市", lat: 39.9042, lng: 116.4074, event: "任礼科给事中"},
+            {year: 1584, location: "京城", modern_name: "北京市", lat: 39.9042, lng: 116.4074, event: ""},
+            {year: 1585, location: "安徽滁州", modern_name: "安徽省滁州市", lat: 32.3012, lng: 118.3171, event: ""},
+            {year: 1585, location: "临海", modern_name: "浙江省台州市临海市", lat: 28.8567, lng: 121.1389, event: ""},
+            {year: 1586, location: "温州", modern_name: "浙江省温州市", lat: 27.9943, lng: 120.6994, event: ""},
+            {year: 1586, location: "苍南", modern_name: "浙江省温州市苍南县", lat: 27.5183, lng: 120.4256, event: ""},
+            {year: 1586, location: "乐清", modern_name: "浙江省温州市乐清市", lat: 28.1129, lng: 120.9866, event: ""},
+            {year: 1586, location: "临海", modern_name: "浙江省台州市临海市", lat: 28.8567, lng: 121.1389, event: ""},
+            {year: 1586, location: "庐山", modern_name: "江西省九江市", lat: 29.4486, lng: 115.9928, event: ""},
+            {year: 1586, location: "武夷山", modern_name: "福建省南平市武夷山市", lat: 27.7566, lng: 118.0354, event: ""},
+            {year: 1586, location: "四明山", modern_name: "浙江省宁波市", lat: 29.8032, lng: 121.0928, event: ""},
+            {year: 1586, location: "雁荡山", modern_name: "浙江省温州市乐清市", lat: 28.3658, lng: 121.0589, event: ""},
+            {year: 1586, location: "雪窦山", modern_name: "浙江省宁波市奉化区", lat: 29.6994, lng: 121.2276, event: ""},
+            {year: 1586, location: "东钱湖", modern_name: "浙江省宁波市鄞州区", lat: 29.7894, lng: 121.6489, event: ""},
+            {year: 1586, location: "普陀", modern_name: "浙江省舟山市普陀区", lat: 29.9856, lng: 122.3869, event: ""},
+            {year: 1586, location: "天台山", modern_name: "浙江省台州市天台县", lat: 29.1714, lng: 121.1053, event: ""},
+            {year: 1587, location: "杭州", modern_name: "浙江省杭州市", lat: 30.2500, lng: 120.1615, event: "作《吴游纪行》、《留都述游》、《白岳游记》"},
+            {year: 1587, location: "嘉兴", modern_name: "浙江省嘉兴市", lat: 30.7539, lng: 120.7585, event: ""},
+            {year: 1587, location: "苏州", modern_name: "江苏省苏州市", lat: 31.2989, lng: 120.5853, event: ""},
+            {year: 1587, location: "镇江", modern_name: "江苏省镇江市", lat: 32.1879, lng: 119.4258, event: ""},
+            {year: 1587, location: "南京", modern_name: "江苏省南京市", lat: 32.0415, lng: 118.7674, event: ""},
+            {year: 1587, location: "九华、白岳", modern_name: "安徽省池州市", lat: 30.4820, lng: 117.8091, event: ""},
+            {year: 1588, location: "孔林", modern_name: "山东省济宁市曲阜市", lat: 35.5928, lng: 116.9911, event: "作《谒阙里记》"},
+            {year: 1588, location: "茶城白云洞", modern_name: "广西桂林市恭城县", lat: 24.8326, lng: 110.8285, event: "作《游茶城白云洞记》"},
+            {year: 1588, location: "泰山", modern_name: "山东省泰安市", lat: 36.2556, lng: 117.1000, event: "作《岱游记》"},
+            {year: 1588, location: "京城", modern_name: "北京市", lat: 39.9042, lng: 116.4074, event: "任礼科给事中"},
+            {year: 1588, location: "西山", modern_name: "北京市海淀区", lat: 39.9395, lng: 116.1866, event: "作《西山游记》"},
+            {year: 1588, location: "河南", modern_name: "河南省", lat: 34.6197, lng: 112.4545, event: ""},
+            {year: 1588, location: "河北", modern_name: "河北省", lat: 38.8731, lng: 115.4845, event: ""},
+            {year: 1588, location: "陕西", modern_name: "陕西省", lat: 34.2636, lng: 108.9500, event: ""},
+            {year: 1588, location: "四川", modern_name: "四川省", lat: 30.6634, lng: 104.0629, event: "入四川作《西征历》、《华游记》"},
+            {year: 1588, location: "成都", modern_name: "四川省成都市", lat: 30.5728, lng: 104.0668, event: "游峨眉山《峨眉山游记》"},
+            {year: 1588, location: "江陵", modern_name: "湖北省荆州市", lat: 30.3503, lng: 112.1899, event: "《入蜀记》三篇"},
+            {year: 1588, location: "襄阳", modern_name: "湖北省襄阳市", lat: 32.0107, lng: 112.1224, event: "游武当山《太和山游记》"},
+            {year: 1588, location: "恒山", modern_name: "山西省大同市浑源县", lat: 39.6746, lng: 113.7321, event: "《恒游记》"},
+            {year: 1589, location: "四川", modern_name: "四川省", lat: 30.6634, lng: 104.0629, event: "由四川入两广"},
+            {year: 1589, location: "江西", modern_name: "江西省", lat: 28.6829, lng: 115.8582, event: "经江西，作《庐山游记》"},
+            {year: 1589, location: "洞庭", modern_name: "湖南省岳阳市", lat: 29.3571, lng: 113.1294, event: "经洞庭，作《楚江识行》、《衡游记》"},
+            {year: 1589, location: "桂林", modern_name: "广西桂林市", lat: 25.2816, lng: 110.2865, event: "作《桂海志续》、《游七星岩记》"},
+            {year: 1589, location: "广东", modern_name: "广东省", lat: 23.1291, lng: 113.2644, event: "入广东（太和山、庐山、楚江诸记、海志、七星岩、独秀山、訾家洲诸记）"},
+            {year: 1590, location: "临海", modern_name: "浙江省台州市临海市", lat: 28.8567, lng: 121.1389, event: "返乡"},
+            {year: 1591, location: "昆明", modern_name: "云南省昆明市", lat: 25.0435, lng: 102.7092, event: "作《泛舟昆明池历太华诸峰记》"},
+            {year: 1591, location: "九鼎山", modern_name: "云南省楚雄州", lat: 25.0329, lng: 101.5465, event: "作《游云南九鼎山记》、《点苍山记》、《游鸡足山记》"},
+            {year: 1591, location: "点苍山", modern_name: "云南省大理州", lat: 25.6856, lng: 100.1325, event: ""},
+            {year: 1591, location: "鸡足山", modern_name: "云南省大理州宾川县", lat: 25.9422, lng: 100.4024, event: ""},
+            {year: 1592, location: "临海", modern_name: "浙江省台州市临海市", lat: 28.8567, lng: 121.1389, event: ""},
+            {year: 1593, location: "河南", modern_name: "河南省", lat: 36.6655, lng: 117.0204, event: "改任河南提学，升山东布政司督粮左参政"},
+            {year: 1593, location: "山东", modern_name: "山东省", lat: 34.7971, lng: 114.3072, event: ""},
+            {year: 1594, location: "临海", modern_name: "浙江省台州市临海市", lat: 28.8567, lng: 121.1389, event: ""},
+            {year: 1595, location: "京都", modern_name: "北京市", lat: 39.9042, lng: 116.4074, event: "被召回京都，作《天台改门修学记》"},
+            {year: 1596, location: "南京鸿胪寺", modern_name: "江苏省南京市", lat: 32.0603, lng: 118.7969, event: "任鸿胪寺卿"},
+            {year: 1597, location: "临海", modern_name: "浙江省台州市临海市", lat: 28.8567, lng: 121.1389, event: "刻《广志绎》"},
+            {year: 1598, location: "镇江", modern_name: "江苏省镇江市", lat: 32.1879, lng: 119.4258, event: "病逝于镇江"}
+        ];
+
+        // 3. 创建标记和路径
+        const markers = [];
+        const lineCoords = [];
+        
+        // 添加图例
+        const legend = L.control({position: 'bottomright'});
+        legend.onAdd = function(map) {
+            const div = L.DomUtil.create('div', 'info legend');
+            div.innerHTML = `
+                <div><i style="background:#3388ff"></i> 行迹地点</div>
+                <div><i style="background:#e74c3c"></i> 重要事件</div>
+                <div><i style="background:#27ae60"></i> 出生/逝世</div>
+                <div><i style="background:#8b0000"></i> 著作记录</div>
+            `;
+            return div;
+        };
+        legend.addTo(map);
+
+        travelData.forEach(point => {
+            lineCoords.push([point.lat, point.lng]);
+            
+            // 根据事件类型设置不同颜色
+            let color = "#3388ff"; // 默认蓝色
+            if (point.event.includes("出生") || point.event.includes("病逝")) {
+                color = "#27ae60"; // 绿色表示出生/逝世
+            } else if (point.event && point.event.includes("作《")) {
+                color = "#8b0000"; // 暗红色表示著作
+            } else if (point.event && point.event.trim() !== "") {
+                color = "#e74c3c"; // 红色表示重要事件
+            }
+            
+            const marker = L.circleMarker([point.lat, point.lng], {
+                radius: 6,
+                fillColor: color,
+                color: "#000",
+                weight: 1,
+                opacity: 1,
+                fillOpacity: 0.8
+            }).bindPopup(`
+                <div class="event-popup">
+                    <b>${point.location}</b><br>
+                    现代位置：${point.modern_name}<br>
+                    年份：${point.year}年<br>
+                    ${point.event ? `事件：${point.event}` : ''}
+                </div>
+            `);
+            markers.push(marker);
+        });
+
+        // 4. 时间轴控制
+        const yearSlider = document.getElementById('year-slider');
+        const yearDisplay = document.getElementById('year-display');
+        
+        // 显示当前年份的标记
+        function updateMarkers(year) {
+            markers.forEach(marker => {
+                const pointYear = travelData[markers.indexOf(marker)].year;
+                if (pointYear <= year) {
+                    if (!map.hasLayer(marker)) {
+                        marker.addTo(map);
+                    }
+                } else {
+                    if (map.hasLayer(marker)) {
+                        map.removeLayer(marker);
+                    }
+                }
+            });
+            
+            // 更新路径（仅显示到当前年份的路径）
+            const visibleCoords = lineCoords.slice(0, travelData.findIndex(p => p.year > year) + 1);
+            if (window.pathLayer) {
+                map.removeLayer(window.pathLayer);
+            }
+            window.pathLayer = L.polyline(visibleCoords, {
+                color: '#8b0000',
+                weight: 3,
+                opacity: 0.7
+            }).addTo(map);
+        }
+
+        // 初始化显示
+        updateMarkers(1547);
+        
+        // 滑块事件
+        yearSlider.addEventListener('input', function() {
+            const year = parseInt(this.value);
+            yearDisplay.textContent = `年份：${year}年`;
+            updateMarkers(year);
+        });
+
+        // 添加缩放控制
+        L.control.zoom({ position: 'topright' }).addTo(map);
+    </script>
+</body>
+</html>

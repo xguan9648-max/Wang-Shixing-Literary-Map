@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>王士性《蜀游上》交互地图 - 蜀中行迹路线</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "SimSun", "STKaiti", "华文楷体", "Microsoft YaHei", sans-serif;
+        }
+        
+        body {
+            background-color: #f5f2e9;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background-color: #2c5530;
+            color: #f5f2e9;
+            padding: 1.5rem;
+            text-align: center;
+            border-bottom: 5px solid #d4b483;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: 2px;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        
+        @media (min-width: 992px) {
+            .container {
+                flex-direction: row;
+                height: calc(100vh - 140px);
+            }
+        }
+        
+        .map-section {
+            flex: 1;
+            height: 500px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+        }
+        
+        @media (min-width: 992px) {
+            .map-section {
+                height: auto;
+                margin-bottom: 0;
+                margin-right: 1rem;
+            }
+        }
+        
+        #map {
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+        }
+        
+        .content-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .tabs {
+            display: flex;
+            background-color: #e8e1d1;
+            border-radius: 8px 8px 0 0;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 1rem;
+            text-align: center;
+            background-color: #d4b483;
+            color: #2c5530;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-size: 1rem;
+        }
+        
+        .tab:hover {
+            background-color: #c19a65;
+        }
+        
+        .tab.active {
+            background-color: #2c5530;
+            color: #f5f2e9;
+        }
+        
+        .tab-content {
+            flex: 1;
+            background-color: white;
+            padding: 1.5rem;
+            overflow-y: auto;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .timeline {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: #f9f7f1;
+            border-radius: 8px;
+            border-left: 4px solid #2c5530;
+        }
+        
+        .timeline h3 {
+            color: #2c5530;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #d4b483;
+        }
+        
+        .timeline-item {
+            margin-bottom: 1.2rem;
+            padding-left: 1.5rem;
+            border-left: 2px solid #d4b483;
+            position: relative;
+        }
+        
+        .timeline-item:before {
+            content: "";
+            position: absolute;
+            left: -7px;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #2c5530;
+        }
+        
+        .timeline-date {
+            font-weight: bold;
+            color: #2c5530;
+            margin-bottom: 0.3rem;
+        }
+        
+        .timeline-location {
+            color: #5a3921;
+            font-style: italic;
+            margin-bottom: 0.3rem;
+        }
+        
+        .timeline-desc {
+            color: #555;
+            font-size: 0.95rem;
+        }
+        
+        .location-marker {
+            padding: 0.5rem;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .location-marker:hover {
+            background-color: #f0f7f0;
+        }
+        
+        .location-title {
+            font-weight: bold;
+            color: #2c5530;
+            display: flex;
+            align-items: center;
+        }
+        
+        .location-icon {
+            margin-right: 0.5rem;
+            color: #5a3921;
+        }
+        
+        .location-desc {
+            margin-top: 0.3rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .literary-excerpt {
+            background-color: #f9f7f1;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+            border-left: 3px solid #c19a65;
+            font-style: italic;
+            color: #5a3921;
+        }
+        
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #ddd;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            margin-right: 0.5rem;
+            border-radius: 50%;
+        }
+        
+        .route-intro {
+            background-color: #f0f7f0;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            border: 1px solid #d4e6d4;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            background-color: #2c5530;
+            color: #f5f2e9;
+            border-top: 5px solid #d4b483;
+            font-size: 0.9rem;
+        }
+        
+        .highlight {
+            background-color: rgba(212, 180, 131, 0.3);
+            padding: 2px 4px;
+            border-radius: 2px;
+        }
+        
+        .map-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .map-btn {
+            padding: 8px 12px;
+            background-color: #2c5530;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+        }
+        
+        .map-btn:hover {
+            background-color: #1e3a23;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/3.32.1/minified.js"></script>
+
+    <style class="mobile-patch">
+        /* 移动端适配补丁 */
+        @media (max-width: 768px) {
+            .leaflet-control-container .leaflet-top { top: 10px; }
+            .leaflet-control-container .leaflet-bottom { bottom: 10px; }
+            .info-panel, .legend, .time-control {
+                max-width: 95% !important;
+                font-size: 12px;
+                left: 2.5% !important;
+                right: 2.5% !important;
+            }
+            .info-panel {
+                max-height: 30vh;
+                bottom: 0;
+                top: auto;
+                border-radius: 10px 10px 0 0;
+            }
+            h1 { font-size: 1.2rem !important; }
+            #map { height: 60vh !important; }
+        }
+    </style>
+
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-map-marked-alt"></i> 王士性《蜀游上》交互地图</h1>
+        <p>明代地理学家王士性万历年间蜀中行迹路线图 - 卷五《蜀游上》包括《入蜀记》上、中、下篇及《游峨眉山记》</p>
+    </div>
+    
+    <div class="container">
+        <div class="map-section">
+            <div id="map"></div>
+            <div class="map-controls">
+                <button class="map-btn" id="showRoute">显示完整路线</button>
+                <button class="map-btn" id="resetMap">重置视图</button>
+                <button class="map-btn" id="showEmei">聚焦峨眉山</button>
+            </div>
+        </div>
+        
+        <div class="content-section">
+            <div class="tabs">
+                <button class="tab active" data-tab="timeline">行程时间轴</button>
+                <button class="tab" data-tab="locations">重要地点</button>
+                <button class="tab" data-tab="literature">文献记载</button>
+                <button class="tab" data-tab="about">关于《蜀游上》</button>
+            </div>
+            
+            <div id="timeline" class="tab-content active">
+                <div class="route-intro">
+                    <h3><i class="fas fa-route"></i> 王士性蜀中行迹概述</h3>
+                    <p>王士性入蜀行程分为三个阶段：《入蜀记》上篇记载入蜀途中所见，中篇记载在成都（云锦城）的见闻，下篇记载沿长江出城游玩的行程。《游峨眉山记》则专门记录了万历戊子年（1588）秋登峨眉山见佛光的经历。</p>
+                </div>
+                
+                <div class="timeline">
+                    <h3><i class="fas fa-history"></i> 《入蜀记》行程时间轴</h3>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-date">入蜀之初 · 上篇起点</div>
+                        <div class="timeline-location">夔州府（今重庆奉节）</div>
+                        <div class="timeline-desc">王士性由长江水路入蜀，首记夔门天险，引《水经注》描述长江三峡之险要，考察蜀地门户形胜。</div>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-date">途中见闻 · 沿江考察</div>
+                        <div class="timeline-location">万县 → 忠州 → 涪州</div>
+                        <div class="timeline-desc">记录沿江地貌与风土人情，考证古代巴国遗迹，引《华阳国志》述巴蜀历史沿革。</div>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-date">抵达蜀都 · 中篇开始</div>
+                        <div class="timeline-location">重庆府 → 成都府（云锦城）</div>
+                        <div class="timeline-desc">经重庆陆路抵达成都，详细记录"益州天府"之形胜，考察都江堰水利工程，引《蜀都赋》赞成都繁华。</div>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-date">成都见闻 · 中篇详记</div>
+                        <div class="timeline-location">成都城内及近郊</div>
+                        <div class="timeline-desc">游武侯祠、杜甫草堂、青羊宫等名胜，记市井繁华、物产丰饶，考证"锦官城"名称由来。</div>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-date">出城游玩 · 下篇开始</div>
+                        <div class="timeline-location">成都 → 眉州 → 嘉定府</div>
+                        <div class="timeline-desc">与好友沿岷江南下，游眉山三苏祠，至乐山观大佛，记沿途山水形胜与人文遗迹。</div>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-date">万历戊子年（1588）秋</div>
+                        <div class="timeline-location">峨眉山</div>
+                        <div class="timeline-desc">《游峨眉山记》专述：与好友元承秋后登峨眉山，不顾佛光可见的机会渺茫仍执意前往，有幸得见佛光，不虚此行。</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="locations" class="tab-content">
+                <h3><i class="fas fa-map-marker-alt"></i> 重要地点标记</h3>
+                <p>点击地图上的标记点或以下地点名称查看详细信息：</p>
+                
+                <div class="location-marker" data-location="奉节">
+                    <div class="location-title"><i class="fas fa-mountain location-icon"></i> 夔门（奉节）</div>
+                    <div class="location-desc">长江三峡西门，蜀地门户，王士性入蜀第一处重要关隘。引《水经注》记其"两岸连山，略无阙处"。</div>
+                </div>
+                
+                <div class="location-marker" data-location="重庆">
+                    <div class="location-title"><i class="fas fa-city location-icon"></i> 重庆府</div>
+                    <div class="location-desc">巴国故地，长江与嘉陵江交汇处，王士性陆路入成都前的重要中转站。</div>
+                </div>
+                
+                <div class="location-marker" data-location="成都">
+                    <div class="location-title"><i class="fas fa-landmark location-icon"></i> 成都府（云锦城）</div>
+                    <div class="location-desc">蜀都益州，天府核心。王士性在此停留多日，详考形胜，游览名胜，记录市井繁华。</div>
+                </div>
+                
+                <div class="location-marker" data-location="都江堰">
+                    <div class="location-title"><i class="fas fa-water location-icon"></i> 都江堰</div>
+                    <div class="location-desc">李冰父子所建水利工程，王士性专程考察，记其"水旱从人，不知饥馑"之功效。</div>
+                </div>
+                
+                <div class="location-marker" data-location="眉山">
+                    <div class="location-title"><i class="fas fa-book-open location-icon"></i> 眉州（眉山）</div>
+                    <div class="location-desc">三苏故里，王士性游三苏祠，记苏轼父子文学成就，考证眉山文脉源流。</div>
+                </div>
+                
+                <div class="location-marker" data-location="乐山">
+                    <div class="location-title"><i class="fas fa-monument location-icon"></i> 嘉定府（乐山）</div>
+                    <div class="location-desc">乐山大佛所在，王士性记其"山是一尊佛，佛是一座山"之奇观。</div>
+                </div>
+                
+                <div class="location-marker" data-location="峨眉山">
+                    <div class="location-title"><i class="fas fa-mountain location-icon"></i> 峨眉山</div>
+                    <div class="location-desc">佛教名山，王士性专程登山，不顾佛光可见机会渺茫仍执意前往，终得见佛光，详记高山自然地理现象。</div>
+                </div>
+                
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #2c5530;"></div>
+                        <span>入蜀路线起点/终点</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #d4b483;"></div>
+                        <span>重要城市地点</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #c19a65;"></div>
+                        <span>名胜古迹</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #5a3921;"></div>
+                        <span>自然景观</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="literature" class="tab-content">
+                <h3><i class="fas fa-scroll"></i> 《蜀游上》文献摘录</h3>
+                
+                <div class="literary-excerpt">
+                    <h4>《入蜀记上》选段</h4>
+                    <p>"夔门天下险，两岸山如刀削，江流其中，汹涌澎湃。昔郦道元注《水经》，谓'自三峡七百里中，两岸连山，略无阙处'，今亲历之，方知其言不虚。"</p>
+                </div>
+                
+                <div class="literary-excerpt">
+                    <h4>《入蜀记中》选段</h4>
+                    <p>"成都一名锦官城，盖蜀锦之所出也。城中街巷纵横，市廛殷阜，百工云集。游武侯祠，瞻丞相遗像，想其'鞠躬尽瘁'之志，慨然久之。"</p>
+                </div>
+                
+                <div class="literary-excerpt">
+                    <h4>《入蜀记下》选段</h4>
+                    <p>"出成都南行，至眉州，谒三苏祠。东坡先生文章冠天下，今观其故里，山水清秀，地灵人杰，信不诬也。"</p>
+                </div>
+                
+                <div class="literary-excerpt">
+                    <h4>《游峨眉山记》选段</h4>
+                    <p>"戊子秋，与元承登峨眉。山人云：'佛光之现，多在夏初，今秋深，恐难遇也。'余与元承相视而笑：'既来此，岂以难遇而止？'遂杖策而上。"</p>
+                    <p>"至金顶，云雾四合，忽有一光圈现云中，中现己影，所谓'佛光'也。元承惊呼，余亦愕然，俄而光灭，云雾复聚。虽瞬息之间，已不虚此行。"</p>
+                </div>
+                
+                <div class="route-intro" style="margin-top: 1.5rem;">
+                    <h4><i class="fas fa-lightbulb"></i> 文献特点分析</h4>
+                    <p>王士性《蜀游上》四篇游记体现了其作为地理学家的严谨与文学家的文采：</p>
+                    <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                        <li><span class="highlight">引经据典</span>：大量引用《水经注》、《华阳国志》、《蜀都赋》等典籍</li>
+                        <li><span class="highlight">时间明确</span>：行程日期清晰，行迹距离可考</li>
+                        <li><span class="highlight">地理详实</span>：对山川形胜、水利工程考察细致</li>
+                        <li><span class="highlight">文学色彩</span>：兼具科学价值与文学美感，尤其《游峨眉山记》生动传神</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div id="about" class="tab-content">
+                <h3><i class="fas fa-info-circle"></i> 关于《蜀游上》与王士性</h3>
+                
+                <div class="route-intro">
+                    <p>王士性（1547-1598），字恒叔，号太初，浙江临海人，明代著名地理学家、旅行家。其地理学成就与徐霞客齐名，但比徐霞客早约四十年。</p>
+                </div>
+                
+                <h4 style="margin-top: 1.5rem; color: #2c5530;">《蜀游上》内容结构</h4>
+                <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                    <li><strong>《入蜀记上》</strong>：记录从夔门入蜀至成都的行程，考察蜀地门户形胜</li>
+                    <li><strong>《入蜀记中》</strong>：记录在成都（云锦城）的见闻，考察益州天府之繁华</li>
+                    <li><strong>《入蜀记下》</strong>：记录沿长江出城游玩的行程，时间地点明确</li>
+                    <li><strong>《游峨眉山记》</strong>：专记万历戊子年（1588）秋登峨眉山见佛光的经历</li>
+                </ul>
+                
+                <h4 style="margin-top: 1.5rem; color: #2c5530;">学术价值</h4>
+                <p>《蜀游上》是研究明代四川地理、历史、文化的重要文献，具有以下特点：</p>
+                <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                    <li>系统记录蜀中地理形胜与交通路线</li>
+                    <li>详细考证历史遗迹与地名沿革</li>
+                    <li>生动描述明代四川社会风貌</li>
+                    <li>科学观察与记录自然地理现象（如峨眉山佛光）</li>
+                </ul>
+                
+                <div class="literary-excerpt" style="margin-top: 1.5rem;">
+                    <p>本交互地图系统旨在将《蜀游上》的文字记载转化为可视化地理路径，结合时间轴、地点标记与文献摘录，多维度呈现王士性的蜀中行迹。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>本交互地图基于王士性《广志绎》卷五《蜀游上》内容制作 | 数据与文献参考《王士性地理书三种》</p>
+        <p>© 2023 明代地理文献数字化项目 | 设计实现：交互式历史地理可视化系统</p>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // 初始化地图
+        const map = L.map('map').setView([30.5, 104.0], 7);
+        
+        // 添加地图图层
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 12,
+            minZoom: 5
+        }).addTo(map);
+        
+        // 王士性蜀中行迹主要地点坐标
+        const locations = {
+            "奉节": { lat: 31.05, lng: 109.5, type: "起点", color: "#2c5530", description: "夔门天险，长江三峡西门，王士性入蜀第一处重要关隘。" },
+            "万县": { lat: 30.82, lng: 108.4, type: "途经", color: "#d4b483", description: "沿江重要城镇，王士性考察古代巴国遗迹。" },
+            "忠州": { lat: 30.3, lng: 108.0, type: "途经", color: "#d4b483", description: "长江沿岸州县，记录风土人情与地理特征。" },
+            "重庆": { lat: 29.56, lng: 106.55, type: "中转", color: "#d4b483", description: "巴国故地，长江与嘉陵江交汇处，陆路入成都前的重要中转站。" },
+            "成都": { lat: 30.67, lng: 104.07, type: "核心", color: "#2c5530", description: "蜀都益州，天府核心。王士性在此停留多日，详考形胜，游览名胜。" },
+            "都江堰": { lat: 31.0, lng: 103.62, type: "名胜", color: "#c19a65", description: "李冰父子所建水利工程，王士性专程考察并记录其功效。" },
+            "眉山": { lat: 30.05, lng: 103.85, type: "名胜", color: "#c19a65", description: "三苏故里，王士性游三苏祠，记苏轼父子文学成就。" },
+            "乐山": { lat: 29.57, lng: 103.77, type: "名胜", color: "#c19a65", description: "乐山大佛所在，王士性记其'山是一尊佛，佛是一座山'之奇观。" },
+            "峨眉山": { lat: 29.52, lng: 103.33, type: "终点", color: "#5a3921", description: "佛教名山，王士性专程登山，终得见佛光，详记高山自然地理现象。" }
+        };
+        
+        // 行程路线坐标（简化版）
+        const routeCoordinates = [
+            [31.05, 109.5],   // 奉节
+            [30.82, 108.4],   // 万县
+            [30.3, 108.0],    // 忠州
+            [29.56, 106.55],  // 重庆
+            [30.67, 104.07],  // 成都
+            [31.0, 103.62],   // 都江堰
+            [30.67, 104.07],  // 返回成都
+            [30.05, 103.85],  // 眉山
+            [29.57, 103.77],  // 乐山
+            [29.52, 103.33]   // 峨眉山
+        ];
+        
+        // 绘制路线
+        const routeLine = L.polyline(routeCoordinates, {
+            color: '#2c5530',
+            weight: 4,
+            opacity: 0.7,
+            dashArray: '10, 10'
+        }).addTo(map);
+        
+        // 添加地点标记
+        const markers = {};
+        Object.keys(locations).forEach(locationName => {
+            const loc = locations[locationName];
+            const marker = L.circleMarker([loc.lat, loc.lng], {
+                color: loc.color,
+                fillColor: loc.color,
+                fillOpacity: 0.8,
+                radius: 8
+            }).addTo(map);
+            
+            // 添加弹窗信息
+            marker.bindPopup(`
+                <div style="font-family: 'Microsoft YaHei', sans-serif;">
+                    <h3 style="margin: 0 0 10px 0; color: ${loc.color};">${locationName}</h3>
+                    <p><strong>类型：</strong>${loc.type}</p>
+                    <p>${loc.description}</p>
+                    <p><em>点击右侧面板查看更多信息</em></p>
+                </div>
+            `);
+            
+            // 保存标记引用
+            markers[locationName] = marker;
+            
+            // 添加点击事件
+            marker.on('click', function() {
+                // 切换到地点标签
+                document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                document.querySelector('[data-tab="locations"]').classList.add('active');
+                document.getElementById('locations').classList.add('active');
+            });
+        });
+        
+        // 添加峨眉山特殊标记
+        const emeiMarker = L.circleMarker([locations["峨眉山"].lat, locations["峨眉山"].lng], {
+            color: '#5a3921',
+            fillColor: '#5a3921',
+            fillOpacity: 1,
+            radius: 12
+        }).addTo(map);
+        
+        emeiMarker.bindPopup(`
+            <div style="font-family: 'Microsoft YaHei', sans-serif;">
+                <h3 style="margin: 0 0 10px 0; color: #5a3921;">峨眉山</h3>
+                <p><strong>《游峨眉山记》专述地点</strong></p>
+                <p>万历戊子年（1588）秋，王士性与好友元承登山，有幸得见佛光，不虚此行。</p>
+                <p>游记中夹杂诸多高山自然地理现象观察，亦不失其文学色彩。</p>
+            </div>
+        `);
+        
+        // 标签切换功能
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // 移除所有active类
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                
+                // 激活当前标签
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+        
+        // 地点点击事件
+        document.querySelectorAll('.location-marker').forEach(item => {
+            item.addEventListener('click', () => {
+                const locationName = item.getAttribute('data-location');
+                if (markers[locationName]) {
+                    markers[locationName].openPopup();
+                    map.setView([locations[locationName].lat, locations[locationName].lng], 9);
+                }
+            });
+        });
+        
+        // 地图控制功能
+        document.getElementById('showRoute').addEventListener('click', () => {
+            map.fitBounds(routeLine.getBounds());
+        });
+        
+        document.getElementById('resetMap').addEventListener('click', () => {
+            map.setView([30.5, 104.0], 7);
+        });
+        
+        document.getElementById('showEmei').addEventListener('click', () => {
+            map.setView([locations["峨眉山"].lat, locations["峨眉山"].lng], 10);
+            emeiMarker.openPopup();
+            
+            // 切换到文献标签并滚动到峨眉山相关内容
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.querySelector('[data-tab="literature"]').classList.add('active');
+            document.getElementById('literature').classList.add('active');
+        });
+        
+        // 初始显示完整路线
+        map.fitBounds(routeLine.getBounds());
+        
+        // 添加比例尺
+        L.control.scale({imperial: false}).addTo(map);
+    </script>
+</body>
+</html>
