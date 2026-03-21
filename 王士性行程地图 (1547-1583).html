@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>王士性行程地图 (1547-1583)</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdn.staticfile.org/leaflet/1.9.4/leaflet.css" />
     <style>
         body {
             margin: 0;
@@ -99,14 +99,15 @@
         </div>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.staticfile.org/leaflet/1.9.4/leaflet.js"></script>
     <script>
         // 初始化地图，中心点设为中原地区
         var map = L.map('map').setView([34.0, 113.0], 5);
 
         // 使用标准明代中国地图作为底图（示例使用普通地图，实际可替换为真实明代地图）
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+            attribution: '© 高德地图',
+            subdomains: '1234',
             minZoom: 4,
             maxZoom: 8
         }).addTo(map);
