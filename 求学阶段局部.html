@@ -182,20 +182,21 @@
             zoomControl: false
         }).setView([34.0, 113.0], 5);
 
-        // 添加哈佛CHGIS明代地图瓦片
-        var chgisMingMap = L.tileLayer('https://map.harvard.edu/tileserver.php?/ming_1582_webmercator/{z}/{x}/{y}.png', {
-            attribution: '明代行政区划地图 © 哈佛大学CHGIS',
+        // 添加高德地图底图
+        var chgisMingMap = L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+            attribution: '© 高德地图',
+            subdomains: '1234',
             minZoom: 4,
-            maxZoom: 8,
-            bounds: [[15.0, 70.0], [45.0, 140.0]]
+            maxZoom: 18
         }).addTo(map);
 
-        // 备用底图（如果CHGIS瓦片不可用）
-        var backupMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}', {
-            attribution: '自然地理底图',
+        // 备用底图（高德卫星影像）
+        var backupMap = L.tileLayer('https://webst0{s}.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}', {
+            attribution: '© 高德地图',
+            subdomains: '1234',
             minZoom: 4,
-            maxZoom: 8,
-            opacity: 0.5
+            maxZoom: 18,
+            opacity: 1
         });
 
         // 检查CHGIS地图是否加载成功
